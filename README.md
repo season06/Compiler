@@ -5,12 +5,12 @@
 ## Project1
 - scanner
 
-## compile execute file
+## Compile execute file
 ```
 make
 ```
 
-## clean
+## Clean execute file
 ```
 make clean
 ```
