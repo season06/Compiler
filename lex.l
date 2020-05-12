@@ -26,6 +26,7 @@
 
 int linenum = 1;
 char buf[MAX_LINE_LENG];
+int start_str = 0;
 char tempStr[MAX_LINE_LENG];
 %}
 
@@ -145,11 +146,11 @@ while     { token("WHILE"); }
 					BEGIN(INITIAL);
                 }
 <STRING>\n      {
-                    LIST;
-					printf("%d: %s", linenum++, buf);
-					buf[0] = '\0';
-                    strcat(tempStr, "\n");
-					yymore();
+					LIST;
+                	printf("%d: %s\n", linenum, buf);
+                	printf("bad character:’%s’\n", "\"");
+					BEGIN(INITIAL);
+                	exit(-1);
                 }
 <STRING>.       {
                     strcat(tempStr, &yytext[yyleng-1]);

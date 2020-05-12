@@ -1,4 +1,4 @@
-#define SIZE 31
+#define SIZE 37
 
 enum TYPE {
     INT,
@@ -70,15 +70,13 @@ int insert(Table *T, char *name)
         for(; current!=NULL; current=current->next)
         {
             if(strcmp(name, current->key) == 0)
-			{
-				printf("same id\n");
                 return 0;
-			}
         }
         newNode->key = malloc(yyleng+1);
         strcpy(newNode->key, name);
         newNode->next = current;
         T->symtable[index] = newNode;
+
         return 1;
     }
 }
