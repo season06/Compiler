@@ -1,19 +1,13 @@
-all:
+all: lex.yy.cpp y.tab.cpp parser
+
+lex.yy.cpp: lex.l
 	lex lex.l
-	cc -o scanner lex.yy.c -ll
-	yacc yacc.y
-	cc -o parser y.tab.c
-	cc -o compiler scanner parser -ll
-lex:
-	lex lex.l
-scanner:
-	cc -o scanner lex.yy.c -ll
-yacc:
-	yacc yacc.y
-parser:
-	cc -o parser y.tab.c
-compiler:
-	cc -o compiler scanner parser -ll
+
+y.tab.cpp: yacc.y
+	yacc -d yacc.y
+
+parser: lex.yy.c y.tab.c symbol.cpp symbol.h
+	g++ lex.yy.c y.tab.c symbol.cpp -o parser -ll -ly -std=c++11
+
 clean:
-	rm -f lex.yy.c
-	rm -f scanner
+	rm lex.yy.c scanner
