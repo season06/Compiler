@@ -1,0 +1,3 @@
+object ex {
+	var c = -1
+}

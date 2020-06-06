@@ -1,9 +1,8 @@
 %{
 /****** C Declaration and include ******/
 #include <iostream>
-#include <string>
 using namespace std;
-#include "y.tab.h"
+#include "y.tab.hpp"
 
 extern "C"
 {
@@ -12,6 +11,12 @@ extern "C"
 }
 
 #define LIST                    strcat(buf, yytext)
+#define token(t)                {							\
+                                    LIST;					\
+                                    printf("<%s>\n", yytext);	\
+									return t;				\
+                                }
+
 #define MAX_LINE_LENG 1024
 
 int linenum = 1;
@@ -37,7 +42,7 @@ ID          {alphabat}({alphabat}|{dig})*
 char		'([^'\\\n]|\\.)'
 delimiter 	[,:\.;()\[\]\{\}]
 arithmetic	[\+\-\*/%]
-assign		[=\]
+assign		'='
 not			'!'
 /* string */
 /*string         \"[^\"]*\"*/
@@ -47,7 +52,7 @@ not			'!'
 line_comment        "//"[^\n]*|"\/\*".*"\*\/"
 
 /* state */
-%x STRING
+%x S_STRING
 %x COMMENT
 
 /****** <regexp> <action> ******/
@@ -61,94 +66,108 @@ line_comment        "//"[^\n]*|"\/\*".*"\*\/"
 /* unput(c): put a character back to be read again a moment later */
 /* output(c): write a character on an output device */
 %%
-boolean   { LIST; return BOOLEAN; }
-break     { LIST; return BREAK; }
-char      { LIST; return CHAR; }
-case      { LIST; return CASE; }
-class     { LIST; return CLASS; }
-continue  { LIST; return COUNTINUE; }
-def       { LIST; return DEF; }
-do        { LIST; return DO; }
-else      { LIST; return ELSE; }
-exit      { LIST; return EXIT; }
-false     { yylval.v_bool = false
-			LIST; return T_BOOL; }
-float     { LIST; return FLOAT; }
-for       { LIST; return FOR; }
-if        { LIST; return IF; }
-int       { LIST; return INT; }
-null      { LIST; return _NULL; }
-object    { LIST; return OBJECT; }
-print     { LIST; return PRINT; }
-println   { LIST; return PRINTLN; }
-read	  { LIST; return READ; }
-repeat    { LIST; return REPEAT; }
-return    { LIST; return RETURN; }
-string    { LIST; return STRING; }
-to        { LIST; return TO; }
-true      { yylval.v_bool = true
-			LIST; return T_BOOL; }
-type      { LIST; return TYPE; }
-val       { LIST; return VAL; }
-var	      { LIST; return VAR; }
-while     { LIST; return WHILE; }
+boolean   { token(BOOLEAN); }
+break     { token(BREAK); }
+char      { token(CHAR); }
+case      { token(CASE); }
+class     { token(CLASS); }
+continue  { token(COUNTINUE); }
+def       { token(DEF); }
+do        { token(DO); }
+else      { token(ELSE); }
+exit      { token(EXIT); }
+false     { yylval.v_bool = false;
+			token(T_BOOL); }
+float     { token(FLOAT); }
+for       { token(FOR); }
+if        { token(IF); }
+int       { token(INT); }
+null      { token(_NULL); }
+object    { token(OBJECT); }
+print     { token(PRINT); }
+println   { token(PRINTLN); }
+repeat    { token(REPEAT); }
+return    { token(RETURN); }
+string    { token(STRING); }
+to        { token(TO); }
+true      { yylval.v_bool = true;
+			token(T_BOOL); }
+type      { token(TYPE); }
+val       { token(VAL); }
+var	      { token(VAR); }
+while     { token(WHILE); }
 
-{delimiter} { LIST; return *yytext; }
-{arithmetic} { LIST; return *yytext; )
+","     { token(','); }
+"."     { token('.'); }
+";"     { token(';'); }
+":"     { token(':'); }
+"("     { token('('); }
+")"     { token(')'); }
+"["     { token('['); }
+"]"     { token(']'); }
+"{"     { token('{'); }
+"}"     { token('}'); }
 
-"<" 	    { LIST; return LT; }
-"<="    	{ LIST; return LTQ; }
-">="    	{ LIST; return GTQ; }
-">"     	{ LIST; return GT; }
-"=="    	{ LIST; return EQ; }
-"!="		{ LIST; return NEQ; }
-{assign}	{ LIST; return *yytext; }
+"+"     { token('+'); }
+"-"     { token('-'); }
+"*"     { token('*'); }
+"/"     { token('/'); }
+"%"     { token('%'); }
 
-"&&"    	{ LIST; return AND; }
-"||"    	{ LIST; return OR; }
-{not}		{ LIST; return *yytext; }
+"<"     { token(LT); }
+"<="    { token(LTQ); }
+">="    { token(GTQ); }
+">"     { token(GT); }
+"=="    { token(EQ); }
+"!="    { token(NEQ); }
+"="     { token('='); }
+
+"&&"    { token(AND); }
+"||"    { token(OR); }
+"!"     { token('!'); }
+
 
 {integer}   {
 				yylval.v_int = atoi(yytext);
-				return T_INT;
+				token(T_INT);
 			}
 {real}      {
 				yylval.v_float = atof(yytext);
-				return T_FLOAT;
+				token(T_FLOAT);
 			}
 {char}		{
-				LIST; 
+				LIST;
 				yylval.v_char = yytext[1];
-				return T_CHAR;
+				token(T_CHAR);
 			}
 {ID}        { 
-				LIST; 
+				LIST;
 				yylval.v_string = new string(yytext);
-				return ID;
+				token(ID);
 			}
 
 \"              {
                     LIST;
-                    BEGIN(STRING);
+                    BEGIN(S_STRING);
                 }
-<STRING>\"\"    {
+<S_STRING>\"\"  {
 					strcat(tempStr, "\"");
 					yymore();
                 }
-<STRING>\"      {
+<S_STRING>\"    {
                     LIST;
 					yylval.v_string = new string(tempStr);
 					BEGIN(INITIAL);
-					return T_STRING;
+					token(T_STRING);
                 }
-<STRING>\n      {
+<S_STRING>\n    {
 					LIST;
-                	//printf("%d: %s\n", linenum, buf);
-                	//printf("bad character:’%s’\n", "\"");
+                	printf("%d: %s\n", linenum, buf);
+                	printf("bad character:’%s’\n", "\"");
 					BEGIN(INITIAL);
                 	exit(-1);
                 }
-<STRING>.       {
+<S_STRING>.     {
                     strcat(tempStr, &yytext[yyleng-1]);
 					yymore();
                 }
