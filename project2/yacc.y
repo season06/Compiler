@@ -61,7 +61,6 @@ vector<vector<IDinfo>> func_call;
 // declare a nonterminal
 %type <info> values expr bool_expr function_invoc
 %type <type> dataType
-%type <func_call> parameter
 
 // declare a terminal that is left-associative
 %left OR
@@ -111,7 +110,7 @@ funcDec : DEF ID 							{
 												now_func = *$2;
 												table.push_table();
 											} 
-		'(' args ')' returnType '{' blockContent returnVal '}'								
+		'(' args ')' returnType '{' blockContent '}'								
 											{
 												Trace("def ID (args) type {} ---> funcDec");
 												//if($7 != $10->type)
@@ -150,20 +149,17 @@ returnVal : RETURN expr 			{
 	 	  | RETURN 					{
 										Trace("return ---> returnVal");
 										table.list[table.top].idmap[now_func].return_value = new IDinfo();
-									}
-		  | 						{	// empty
-										table.list[table.top].idmap[now_func].return_value = new IDinfo();
 									};
 //////////////////////// call function ////////////////////////
 function_invoc : ID 					{
 											func_call.push_back(vector<IDinfo>());
 										}
 				'('	parameters ')'		{
-											Trace("ID(parameter) ---> expr");
+											Trace("ID(parameter) ---> function_invoc");
 											IDinfo *id = table.lookup(*$1);
 											if(id == NULL)
 												yyerror(*$1 + " not found");
-											if(id->scope != IDscope::s_function)
+											if(id->scope != s_function)
 												yyerror("ID type is not function, can't use ()");
 											vector<IDinfo> parm = id->args_value;
 											for(int i=0; i<parm.size(); i++)
@@ -172,7 +168,7 @@ function_invoc : ID 					{
 													yyerror("type error: parameter and declaration");
 											}
 											func_call.pop_back();
-											$$ = id->return_value;
+											$$ = id;
 										}
 parameters: parameter
 		  |
@@ -190,7 +186,7 @@ para: expr								{
 
 //////////////////////// statement ////////////////////////
 stats : stat stats
-	  | stat
+	  |
 	  ;
 stat : ID '=' expr 					{
 										Trace("ID[expr] ---> stat");
@@ -202,18 +198,21 @@ stat : ID '=' expr 					{
 										id->setValue($3->value);
 										id->init = true;
 									}
-	| ID '[' T_INT ']' '=' expr 	{
+	| ID '[' expr ']' '=' expr 		{
 										Trace("ID[expr]=expr ---> stat");
 										IDinfo *id = table.lookup(*$1);
 										if(id == NULL)
 											yyerror(*$1 + " not found");
 										if(id->scope != s_array)
 											yyerror(*$1 + " is not array");
-										if($3 >= id->arr_size || $3 < 0)
+										if($3->type != t_int)
+											yyerror("Arrey index must be integer");
+										int index = $3->value.v_int;
+										if(index >= id->arr_size || index < 0)
 											yyerror("array index out of range");
-										if(id->arr_size != $6->type)
+										if(id->type != $6->type)
 											yyerror("array assign data type error");
-										id->arr_value[$3].setValue($6->value);
+										id->arr_value[index].setValue($6->value);
 										id->init = true;
 									}
 	| PRINT expr 				{
@@ -225,35 +224,42 @@ stat : ID '=' expr 					{
 	| READ ID 					{
 									Trace("read ID ---> stat");
 								}
+	| returnVal					{
+									Trace("returnVal ---> stat");
+								}
 	| ifStat					{
 									Trace("ifStat ---> stat");
 								}
 	| loopStat					{
 									Trace("loopStat ---> stat");
 								}
-	| block						{
-									Trace("block ---> stat");
+	| function_invoc			{
+									Trace("function_invoc ---> stat");
 								};
 ifStat : IF '(' bool_expr ')' 	
-		 block elseStat			{
+		 block_or_stat elseStat	{
 									Trace("IF (bool_expr) block elseStat ---> ifStat");
 								};
 elseStat : ELSE
-		   block				{
+		   block_or_stat		{
 									Trace("else block ---> elseStat");
 								}
 		 | //empty
 		 ;
 
-loopStat : WHILE '(' bool_expr ')' 				
-		   block								{
-													Trace("WHILE (bool_expr) block ---> loopStat");
+loopStat : WHILE '(' expr ')' 				
+		   block_or_stat						{
+													Trace("WHILE (expr) ---> loopStat");
 												}
-		 | FOR '(' ID LT '-' expr TO expr ')' 	
-		   block								{
-													Trace("for (id <- expr to expr) block ---> loopStat");
-												};
-
+		 | FOR '(' ID LT '-' T_INT TO T_INT ')' {
+													IDinfo *id = table.lookup(*$3);
+													if(id == NULL)
+														yyerror(*$3 + " not found");
+												}
+		   block_or_stat						{	
+			   										Trace("for (id <- expr to expr) ---> loopStat");
+		   										};
+block_or_stat: block | stat;
 
 block : '{' 				{
 								Trace("create block table");
@@ -264,15 +270,13 @@ block : '{' 				{
 								table.dump();
 								table.pop_table();
 							};
-blockContent : declarations blockContent
-			 | stats blockContent
-			 | declarations
+blockContent : declaration blockContent
 			 | stats
-		 	 |  //empty
-			  ;
+			 ;
 ////////////////////////  declaration ////////////////////////
 declarations : declaration declarations
-			 | declaration
+			 | 
+			 ;
 
 declaration : varDeclare
 			| constDeclare
@@ -281,9 +285,11 @@ declaration : varDeclare
 // var id : type [num]
 varDeclare : VAR ID ':' dataType '[' T_INT ']'	{
 													Trace("var id : type [ expr ] ---> declaration");
-													int t = table.insert_arr(*$2, $4, $6);
+													IDinfo *f = new IDinfo($4, s_array, false);
+													int t = table.insert(*$2, *f);
 													if(t == -1)
 														yyerror(*$2 + " has been declared");
+													table.list[table.top].insert_arr(*$2, $4, $6);
 												}
 		   | VAR ID ':' dataType '=' expr 		{
 													Trace("var id : type = expr ---> declaration");
@@ -345,11 +351,13 @@ expr : '(' expr ')' 		{
 									Trace("-expr ---> expr");
 									if($2->type == t_int)
 									{
-										$$->value.v_int = $2->value.v_int;
+										$2->value.v_int *= -1;
+										$$ = $2;
 									}
 									else if($2->type == t_float)
 									{
-										$$->value.v_float =  $2->value.v_float;
+										$2->value.v_float *= -1;
+										$$ = $2;
 									}
 									else
 									{
@@ -491,220 +499,220 @@ expr : '(' expr ')' 		{
 									yyerror("type error -> expr % expr");
 								}
 							}
-	 | bool_expr 				{
-									Trace("bool_expr ---> expr");
-									$$ = $1;
-								}
-	 | ID '[' expr ']' 		{
-									Trace("ID[expr] ---> expr");
-									IDinfo *id = table.lookup(*$1);
-									if(id == NULL)
-										yyerror(*$1 + " not found");
-									if(id->scope != s_array)
-										yyerror("ID type is not array, can't use []");
-									if($3->type != t_int)
-										yyerror("Arrey index must be integer");
-									if($3->value.v_int > id->arr_size || $3->value.v_int < 0)
-										yyerror("Arrey index out of range");
-									$$ = new IDinfo(id->arr_value[$3->value.v_int]);
-									
-								}
-	 | function_invoc			{	Trace("function_invoc ---> expr");	}
-	 | ID 						{
-									Trace("ID ---> expr");
-									IDinfo *id = table.lookup(*$1);
-									if(id == NULL)
-										yyerror(*$1 + " not found");
-									if(id->scope == s_array)
-										yyerror("ID in array scope has no index.");
-									if(id->scope == s_function)
-										yyerror("ID call function has no parameter.");
-									$$ = id;
-								}
-	 | values 					{
-									Trace("values ---> expr");
-									$$ = $1;
-								};
+	 | bool_expr 			{
+								Trace("bool_expr ---> expr");
+								$$ = $1;
+							}
+	 | ID '[' expr ']' 	{
+								Trace("ID[expr] ---> expr");
+								IDinfo *id = table.lookup(*$1);
+								if(id == NULL)
+									yyerror(*$1 + " not found");
+								if(id->scope != s_array)
+									yyerror("ID type is not array, can't use []");
+								if($3->type != t_int)
+									yyerror("Arrey index must be integer");
+								int index = $3->value.v_int;
+								if(index > id->arr_size || index < 0)
+									yyerror("Arrey index out of range");
+								$$ = new IDinfo(id->arr_value[index]);
+							}
+	 | function_invoc		{	Trace("function_invoc ---> expr");	}
+	 | ID 					{
+								Trace("ID ---> expr");
+								IDinfo *id = table.lookup(*$1);
+								if(id == NULL)
+									yyerror(*$1 + " not found");
+								if(id->scope == s_array)
+									yyerror("ID in array scope has no index.");
+								if(id->scope == s_function)
+									yyerror("ID call function has no parameter.");
+								$$ = id;
+							}
+	 | values 				{
+								Trace("values ---> expr");
+								$$ = $1;
+							};
 
-bool_expr : '!' expr 			{ 
-									Trace("! expr ---> bool_expr");
-									if($2->type != t_bool)
-									{
-										yyerror("type error -> ! expr");
-									}
-									else
-									{
-										$$->value.v_bool = !($2->value.v_bool);
-									}
+bool_expr : '!' expr 		{ 
+								Trace("! expr ---> bool_expr");
+								if($2->type != t_bool)
+								{
+									yyerror("type error -> ! expr");
 								}
-		  | expr LT expr 		{ 
-									Trace("expr < expr ---> bool_expr");
-									if($1->type == t_int && $3->type == t_int)
-									{
-										$$->value.v_bool = $1->value.v_int < $3->value.v_int;
-									}
-									else if($1->type == t_float && $3->type == t_float)
-									{
-										$$->value.v_bool = $1->value.v_float < $3->value.v_float;
-									}
-									else if($1->type == t_int && $3->type == t_float)
-									{
-										$$->value.v_bool = (float)$1->value.v_int < $3->value.v_float;
-									}
-									else if($1->type == t_float && $3->type == t_int)
-									{
-										$$->value.v_bool = $1->value.v_float < (float)$3->value.v_int;
-									}
-									else
-									{
-										yyerror("type error -> expr < expr");
-									}
+								else
+								{
+									$$->value.v_bool = !($2->value.v_bool);
 								}
-		  | expr LTQ expr 		{ 
-									Trace("expr <= expr ---> bool_expr");
-									if($1->type == t_int && $3->type == t_int)
-									{
-										$$->value.v_bool = $1->value.v_int <= $3->value.v_int;
-									}
-									else if($1->type == t_float && $3->type == t_float)
-									{
-										$$->value.v_bool = $1->value.v_float <= $3->value.v_float;
-									}
-									else if($1->type == t_int && $3->type == t_float)
-									{
-										$$->value.v_bool = (float)$1->value.v_int <= $3->value.v_float;
-									}
-									else if($1->type == t_float && $3->type == t_int)
-									{
-										$$->value.v_bool = $1->value.v_float <= (float)$3->value.v_int;
-									}
-									else
-									{
-										yyerror("type error -> expr <= expr");
-									}
+							}
+		  | expr LT expr 	{ 
+								Trace("expr < expr ---> bool_expr");
+								if($1->type == t_int && $3->type == t_int)
+								{
+									$$->value.v_bool = $1->value.v_int < $3->value.v_int;
 								}
-		  | expr GT expr 		{ 
-									Trace("expr > expr ---> bool_expr");
-									if($1->type == t_int && $3->type == t_int)
-									{
-										$$->value.v_bool = $1->value.v_int > $3->value.v_int;
-									}
-									else if($1->type == t_float && $3->type == t_float)
-									{
-										$$->value.v_bool = $1->value.v_float > $3->value.v_float;
-									}
-									else if($1->type == t_int && $3->type == t_float)
-									{
-										$$->value.v_bool = (float)$1->value.v_int > $3->value.v_float;
-									}
-									else if($1->type == t_float && $3->type == t_int)
-									{
-										$$->value.v_bool = $1->value.v_float > (float)$3->value.v_int;
-									}
-									else
-									{
-										yyerror("type error -> expr > expr");
-									}
+								else if($1->type == t_float && $3->type == t_float)
+								{
+									$$->value.v_bool = $1->value.v_float < $3->value.v_float;
 								}
-		  | expr GTQ expr 		{ 
-									Trace("expr >= expr ---> bool_expr");
-									if($1->type == t_int && $3->type == t_int)
-									{
-										$$->value.v_bool = $1->value.v_int >= $3->value.v_int;
-									}
-									else if($1->type == t_float && $3->type == t_float)
-									{
-										$$->value.v_bool = $1->value.v_float >= $3->value.v_float;
-									}
-									else if($1->type == t_int && $3->type == t_float)
-									{
-										$$->value.v_bool = (float)$1->value.v_int >= $3->value.v_float;
-									}
-									else if($1->type == t_float && $3->type == t_int)
-									{
-										$$->value.v_bool = $1->value.v_float >= (float)$3->value.v_int;
-									}
-									else
-									{
-										yyerror("type error -> expr >= expr");
-									}
+								else if($1->type == t_int && $3->type == t_float)
+								{
+									$$->value.v_bool = (float)$1->value.v_int < $3->value.v_float;
 								}
-		  | expr EQ expr 		{ 
-									Trace("expr == expr ---> bool_expr");
-									if($1->type == t_int && $3->type == t_int)
-									{
-										$$->value.v_bool = $1->value.v_int == $3->value.v_int;
-									}
-									else if($1->type == t_float && $3->type == t_float)
-									{
-										$$->value.v_bool = $1->value.v_float == $3->value.v_float;
-									}
-									else if($1->type == t_char && $3->type == t_char)
-									{
-										$$->value.v_bool = $1->value.v_char == $3->value.v_char;
-									}
-									else if($1->type == t_string && $3->type == t_string)
-									{
-										$$->value.v_bool = $1->value.v_string == $3->value.v_string;
-									}
-									else if($1->type == t_bool && $3->type == t_bool)
-									{
-										$$->value.v_bool = $1->value.v_bool == $3->value.v_bool;
-									}
-									else
-									{
-										yyerror("type error -> expr == expr");
-									}
+								else if($1->type == t_float && $3->type == t_int)
+								{
+									$$->value.v_bool = $1->value.v_float < (float)$3->value.v_int;
 								}
-	 	  | expr NEQ expr 		{ 
-									Trace("expr != expr ---> bool_expr");
-									if($1->type == t_int && $3->type == t_int)
-									{
-										$$->value.v_bool = $1->value.v_int != $3->value.v_int;
-									}
-									else if($1->type == t_float && $3->type == t_float)
-									{
-										$$->value.v_bool = $1->value.v_float != $3->value.v_float;
-									}
-									else if($1->type == t_char && $3->type == t_char)
-									{
-										$$->value.v_bool = $1->value.v_char != $3->value.v_char;
-									}
-									else if($1->type == t_string && $3->type == t_string)
-									{
-										$$->value.v_bool = $1->value.v_string != $3->value.v_string;
-									}
-									else if($1->type == t_bool && $3->type == t_bool)
-									{
-										$$->value.v_bool = $1->value.v_bool != $3->value.v_bool;
-									}
-									else
-									{
-										yyerror("type error -> expr != expr");
-									}
+								else
+								{
+									yyerror("type error -> expr < expr");
 								}
-		  | expr AND expr		{ 
-									Trace("expr && expr ---> bool_expr");
-									if($1->type != t_bool || $3->type != t_bool)
-									{
-										yyerror("type error -> expr && expr");
-									}
-									else
-									{
-										$$->value.v_bool = $1->value.v_bool && $3->value.v_bool;
-									}
+							}
+		  | expr LTQ expr 	{ 
+								Trace("expr <= expr ---> bool_expr");
+								if($1->type == t_int && $3->type == t_int)
+								{
+									$$->value.v_bool = $1->value.v_int <= $3->value.v_int;
 								}
-		  | expr OR expr		{ 
-									Trace("expr || expr ---> bool_expr");
-									if($1->type != t_bool || $3->type != t_bool)
-									{
-										yyerror("type error -> expr || expr");
-									}
-									else
-									{
-										$$->value.v_bool = $1->value.v_bool || $3->value.v_bool;
-									}
-								};
+								else if($1->type == t_float && $3->type == t_float)
+								{
+									$$->value.v_bool = $1->value.v_float <= $3->value.v_float;
+								}
+								else if($1->type == t_int && $3->type == t_float)
+								{
+									$$->value.v_bool = (float)$1->value.v_int <= $3->value.v_float;
+								}
+								else if($1->type == t_float && $3->type == t_int)
+								{
+									$$->value.v_bool = $1->value.v_float <= (float)$3->value.v_int;
+								}
+								else
+								{
+									yyerror("type error -> expr <= expr");
+								}
+							}
+		  | expr GT expr 	{ 
+								Trace("expr > expr ---> bool_expr");
+								if($1->type == t_int && $3->type == t_int)
+								{
+									$$->value.v_bool = $1->value.v_int > $3->value.v_int;
+								}
+								else if($1->type == t_float && $3->type == t_float)
+								{
+									$$->value.v_bool = $1->value.v_float > $3->value.v_float;
+								}
+								else if($1->type == t_int && $3->type == t_float)
+								{
+									$$->value.v_bool = (float)$1->value.v_int > $3->value.v_float;
+								}
+								else if($1->type == t_float && $3->type == t_int)
+								{
+									$$->value.v_bool = $1->value.v_float > (float)$3->value.v_int;
+								}
+								else
+								{
+									yyerror("type error -> expr > expr");
+								}
+							}
+		  | expr GTQ expr 	{ 
+								Trace("expr >= expr ---> bool_expr");
+								if($1->type == t_int && $3->type == t_int)
+								{
+									$$->value.v_bool = $1->value.v_int >= $3->value.v_int;
+								}
+								else if($1->type == t_float && $3->type == t_float)
+								{
+									$$->value.v_bool = $1->value.v_float >= $3->value.v_float;
+								}
+								else if($1->type == t_int && $3->type == t_float)
+								{
+									$$->value.v_bool = (float)$1->value.v_int >= $3->value.v_float;
+								}
+								else if($1->type == t_float && $3->type == t_int)
+								{
+									$$->value.v_bool = $1->value.v_float >= (float)$3->value.v_int;
+								}
+								else
+								{
+									yyerror("type error -> expr >= expr");
+								}
+							}
+		  | expr EQ expr 	{ 
+								Trace("expr == expr ---> bool_expr");
+								if($1->type == t_int && $3->type == t_int)
+								{
+									$$->value.v_bool = $1->value.v_int == $3->value.v_int;
+								}
+								else if($1->type == t_float && $3->type == t_float)
+								{
+									$$->value.v_bool = $1->value.v_float == $3->value.v_float;
+								}
+								else if($1->type == t_char && $3->type == t_char)
+								{
+									$$->value.v_bool = $1->value.v_char == $3->value.v_char;
+								}
+								else if($1->type == t_string && $3->type == t_string)
+								{
+									$$->value.v_bool = $1->value.v_string == $3->value.v_string;
+								}
+								else if($1->type == t_bool && $3->type == t_bool)
+								{
+									$$->value.v_bool = $1->value.v_bool == $3->value.v_bool;
+								}
+								else
+								{
+									yyerror("type error -> expr == expr");
+								}
+							}
+	 	  | expr NEQ expr 	{ 
+								Trace("expr != expr ---> bool_expr");
+								if($1->type == t_int && $3->type == t_int)
+								{
+									$$->value.v_bool = $1->value.v_int != $3->value.v_int;
+								}
+								else if($1->type == t_float && $3->type == t_float)
+								{
+									$$->value.v_bool = $1->value.v_float != $3->value.v_float;
+								}
+								else if($1->type == t_char && $3->type == t_char)
+								{
+									$$->value.v_bool = $1->value.v_char != $3->value.v_char;
+								}
+								else if($1->type == t_string && $3->type == t_string)
+								{
+									$$->value.v_bool = $1->value.v_string != $3->value.v_string;
+								}
+								else if($1->type == t_bool && $3->type == t_bool)
+								{
+									$$->value.v_bool = $1->value.v_bool != $3->value.v_bool;
+								}
+								else
+								{
+									yyerror("type error -> expr != expr");
+								}
+							}
+		  | expr AND expr	{ 
+								Trace("expr && expr ---> bool_expr");
+								if($1->type != t_bool || $3->type != t_bool)
+								{
+									yyerror("type error -> expr && expr");
+								}
+								else
+								{
+									$$->value.v_bool = $1->value.v_bool && $3->value.v_bool;
+								}
+							}
+		  | expr OR expr	{ 
+								Trace("expr || expr ---> bool_expr");
+								if($1->type != t_bool || $3->type != t_bool)
+								{
+									yyerror("type error -> expr || expr");
+								}
+								else
+								{
+									$$->value.v_bool = $1->value.v_bool || $3->value.v_bool;
+								}
+							};
 dataType : INT		{
 						$$ = t_int;
 					}

@@ -139,10 +139,17 @@ public:
 			idmap[id].scope = f.scope;
 			idmap[id].init = f.init;
 			idmap[id].value = f.value;
-
-			idmap[id].arr_size = f.arr_size;
-			idmap[id].arr_value = f.arr_value;
 			return 1;
+		}
+	}
+	void insert_arr(string id, int type, int size)
+	{
+		idmap[id].arr_size = size;
+		idmap[id].arr_value = vector<IDinfo>(size);
+		for(auto &i : idmap[id].arr_value)
+		{
+			i.type = type;
+			i.scope = s_variable;
 		}
 	}
 	int insert_args(string now_func, string id, const IDinfo &f)
@@ -174,7 +181,7 @@ public:
 	}
 	void dump()
 	{
-		cout <<setw(10)<<"ID"<<setw(10)<<"TYPE"<<setw(10)<<"SCOPE"<<setw(16)<<"VALUE\n";
+		cout <<setw(10)<<"ID"<<setw(10)<<"TYPE"<<setw(10)<<"SCOPE"<<setw(20)<<"INFO\n";
 		for(int n=0; n<id_name.size(); n++)
 		{
 			string output;
@@ -184,29 +191,30 @@ public:
 			output = IDtype2str(f.type);
 			cout << output << setw(10);
 			output = IDscope2str(f.scope);
-			cout << output << setw(15);
+			cout << output << setw(20);
+			output = "";
 			if(f.scope == s_variable || f.scope == s_const)
 			{
+				output = "value = ";
 				if(f.type == t_int)
-					output = to_string(f.value.v_int);
+					output += to_string(f.value.v_int);
 				if(f.type == t_float)
-					output = to_string(f.value.v_float);
+					output += to_string(f.value.v_float);
 				if(f.type == t_char)
-					output = &(f.value.v_char);
+					output += f.value.v_char;
 				if(f.type == t_string)
-					output = f.value.v_int;
+					output += f.value.v_int;
 				if(f.type == t_bool)
-					output = to_string(f.value.v_bool);
+					output += to_string(f.value.v_bool);
 			}
-			if(f.scope == s_array)
+			else if(f.scope == s_array)
 			{
-				output += "{ ";
-				output += IDtype2str(f.arr_value[0].type);
-				output += " }";
+				output = "size = ";
+				output += to_string(f.arr_size);
 			}
-			if(f.scope == s_function)
+			else if(f.scope == s_function)
 			{
-				output += "{ ";
+				output = "  argument = { ";
 				for(int i=0; i<f.args_value.size(); i++)
 				{
 					output += IDtype2str(f.args_value[i].type);
@@ -233,20 +241,6 @@ public:
 	{
 		return list[top].insert(id, c);
 	}
-	int insert_arr(string id, int type, int size)
-	{
-		IDinfo *f = new IDinfo();
-		f->scope = s_array;
-		f->type = type;
-		f->arr_size = size;
-		f->arr_value = vector<IDinfo>(size);
-		for(auto &i : f->arr_value)
-		{
-			i.type = type;
-			i.scope = s_variable;
-		}
-		return list[top].insert(id, *f);
-	}
 	void push_table()
 	{
 		list.push_back(Symbol());
@@ -270,8 +264,8 @@ public:
 	{
 		if(top >= 0)
 		{
-			cout << "=============Dump SymbolTable=============\n";
-			cout << "          =======Layer: "<< top << " ======\n";
+			cout << "=================Dump SymbolTable=================\n";
+			cout << "            =======Layer: "<< top << " ======\n";
 			list[top].dump();
 		}
 	}
