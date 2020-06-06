@@ -15,10 +15,10 @@ object example {
   def main()
   {
     var c:int
-    c = add(a, 10)
+    //c = add(a, 10)
     if(c > 10)
 	{
-      print c
+      print -c
 	}
     else
 	{
