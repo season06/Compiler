@@ -28,7 +28,7 @@ vector<vector<IDinfo>> func_call;
 %}
 /****** Definition of yytype *****/
 
-// yacc lex shared variable
+/* yacc lex shared variable */
 %union {
 	int v_int;
 	float v_float;
@@ -41,7 +41,7 @@ vector<vector<IDinfo>> func_call;
 	vector<IDinfo*>* func_call;
 };
 
-// declare a terminal
+/* declare a terminal */
 %token OBJECT CLASS DEF
 %token VAR VAL INT FLOAT CHAR STRING BOOLEAN
 %token TYPE _NULL TRUE FALSE
@@ -50,7 +50,7 @@ vector<vector<IDinfo>> func_call;
 %token IF ELSE
 %token PRINT PRINTLN READ
 
-// value is transmitted by lex
+/* value is transmitted by lex */
 %token <v_int> T_INT
 %token <v_float> T_FLOAT
 %token <v_char> T_CHAR
@@ -58,11 +58,11 @@ vector<vector<IDinfo>> func_call;
 %token <v_bool> T_BOOL
 %token <v_string> ID
 
-// declare a nonterminal
+/* declare a nonterminal */
 %type <info> values expr bool_expr function_invoc
 %type <type> dataType
 
-// declare a terminal that is left-associative
+/* declare a terminal that is left-associative */
 %left OR
 %left AND
 %left '!'
@@ -70,27 +70,27 @@ vector<vector<IDinfo>> func_call;
 %left '+' '-'
 %left '*' '/' '%'
 
-// declare a terminal that is nonassociative
+/* declare a terminal that is nonassociative */
 %nonassoc UMINUS
 
-//grammar start symbol
+/* grammar start symbol */
 %start program
 
 %%
 //////////////////////// object ////////////////////////
-program : OBJECT ID 			{
-									Trace("create object table");
-									table.push_table();
-									IDinfo *f = new IDinfo(t_unknown, s_object, false);
-									int t = table.insert(*$2, *f);
-									if(t == -1)
-										yyerror(*$2 + " has been declared");
-								}
-		  '{' objContent '}'	{
-									Trace("object ID objBlock ---> program");
-									table.dump();
-									table.pop_table();
-								};
+program : OBJECT ID 				{
+										Trace("create object table");
+										table.push_table();
+										IDinfo *f = new IDinfo(t_unknown, s_object, false);
+										int t = table.insert(*$2, *f);
+										if(t == -1)
+											yyerror(*$2 + " has been declared");
+									}
+		  '{' objContent '}'		{
+										Trace("object ID objBlock ---> program");
+										table.dump();
+										table.pop_table();
+									};
 
 objContent : funcDecs objContent
  		   | declarations objContent
@@ -101,55 +101,55 @@ objContent : funcDecs objContent
 funcDecs : funcDec funcDecs
 		 | funcDec
 		 ;
-funcDec : DEF ID 							{
-												Trace("create function table");
-												IDinfo *f = new IDinfo(t_unknown, s_function, false);
-												int t = table.insert(*$2, *f);
-												if(t == -1)
-													yyerror(*$2 + " has been declared");
-												now_func = *$2;
-												table.push_table();
-											} 
+funcDec : DEF ID 									{
+														Trace("create function table");
+														IDinfo *f = new IDinfo(t_unknown, s_function, false);
+														int t = table.insert(*$2, *f);
+														if(t == -1)
+															yyerror(*$2 + " has been declared");
+														now_func = *$2;
+														table.push_table();
+													} 
 		'(' args ')' returnType '{' blockContent '}'								
-											{
-												Trace("def ID (args) type {} ---> funcDec");
-												//if($7 != $10->type)
-												//	yyerror("type error: function type and return type");
-												table.dump();
-												table.pop_table();
-											};
+													{
+														Trace("def ID (args) type {} ---> funcDec");
+														//if($7 != $10->type)
+														//	yyerror("type error: function type and return type");
+														table.dump();
+														table.pop_table();
+													};
 
-args : arg ',' args					{
-										Trace("args, arg ---> args");
-									}
-	 |  arg 						{
-										Trace("arg ---> args");
-									}
-	 |									// empty
+args : arg ',' args						{
+											Trace("args, arg ---> args");
+										}
+	 |  arg 							{
+											Trace("arg ---> args");
+										}
+	 |										/* empty */
 	 ; 
-arg : ID ':' dataType				{
-										Trace("ID:type ---> arg");
-										IDinfo *f = new IDinfo($3, s_variable, false);
-										int t = table.insert(*$1, *f);
-										t = table.list[table.top].insert_args(now_func, *$1, *f);
-										if(t == -1)
-											yyerror(*$1 + " has been declared");
-									};
+arg : ID ':' dataType					{
+											Trace("ID:type ---> arg");
+											IDinfo *f = new IDinfo($3, s_variable, false);
+											int t = table.insert(*$1, *f);
+											t = table.list[table.top].insert_args(now_func, *$1, *f);
+											if(t == -1)
+												yyerror(*$1 + " has been declared");
+										};
 
-returnType : ':' dataType 			{
-										table.list[table.top].idmap[now_func].return_type = $2;
-									}
-		   | 						{	//empty
-			   							table.list[table.top].idmap[now_func].return_type = t_unknown;
-		   							}; 
-returnVal : RETURN expr 			{
-										Trace("return expr ---> returnVal");
-										table.list[table.top].idmap[now_func].return_value = new IDinfo(*$2);
-									}
-	 	  | RETURN 					{
-										Trace("return ---> returnVal");
-										table.list[table.top].idmap[now_func].return_value = new IDinfo();
-									};
+returnType : ':' dataType 				{
+											table.list[table.top].idmap[now_func].return_type = $2;
+										}
+		   | 							{	/* empty */
+			   								table.list[table.top].idmap[now_func].return_type = t_unknown;
+		   								}; 
+returnVal : RETURN expr 				{
+											Trace("return expr ---> returnVal");
+											table.list[table.top].idmap[now_func].return_value = new IDinfo(*$2);
+										}
+	 	  | RETURN 						{
+											Trace("return ---> returnVal");
+											table.list[table.top].idmap[now_func].return_value = new IDinfo();
+										};
 //////////////////////// call function ////////////////////////
 function_invoc : ID 					{
 											func_call.push_back(vector<IDinfo>());
@@ -215,35 +215,19 @@ stat : ID '=' expr 					{
 										id->arr_value[index].setValue($6->value);
 										id->init = true;
 									}
-	| PRINT expr 				{
-									Trace("print ---> stat");
-								}
-	| PRINTLN expr 				{
-									Trace("println ---> stat");
-								}
-	| READ ID 					{
-									Trace("read ID ---> stat");
-								}
-	| returnVal					{
-									Trace("returnVal ---> stat");
-								}
-	| ifStat					{
-									Trace("ifStat ---> stat");
-								}
-	| loopStat					{
-									Trace("loopStat ---> stat");
-								}
-	| function_invoc			{
-									Trace("function_invoc ---> stat");
-								};
+	| PRINT expr 					{	Trace("print ---> stat");		}
+	| PRINTLN expr 					{	Trace("println ---> stat");		}
+	| READ ID 						{	Trace("read ID ---> stat");		}
+	| returnVal						{	Trace("returnVal ---> stat");	}
+	| ifStat						{	Trace("ifStat ---> stat");		}
+	| loopStat						{	Trace("loopStat ---> stat");	}
+	| function_invoc				{	Trace("function_invoc ---> stat");	}
+	;
 ifStat : IF '(' bool_expr ')' 	
-		 block_or_stat elseStat	{
-									Trace("IF (bool_expr) block elseStat ---> ifStat");
-								};
+		 block_or_stat elseStat		{	Trace("IF (bool_expr) block elseStat ---> ifStat");	}
+	   ;
 elseStat : ELSE
-		   block_or_stat		{
-									Trace("else block ---> elseStat");
-								}
+		   block_or_stat			{	Trace("else block ---> elseStat");	}
 		 | //empty
 		 ;
 
@@ -261,15 +245,15 @@ loopStat : WHILE '(' expr ')'
 		   										};
 block_or_stat: block | stat;
 
-block : '{' 				{
-								Trace("create block table");
-								table.push_table();
-							}
-		blockContent '}' 	{
-								Trace("{blockContent} ---> block");
-								table.dump();
-								table.pop_table();
-							};
+block : '{' 						{
+										Trace("create block table");
+										table.push_table();
+									}
+		blockContent '}' 			{
+										Trace("{blockContent} ---> block");
+										table.dump();
+										table.pop_table();
+									};
 blockContent : declaration blockContent
 			 | stats
 			 ;
@@ -324,46 +308,46 @@ varDeclare : VAR ID ':' dataType '[' T_INT ']'	{
 														yyerror(*$2 + " has been declared");
 												};
 
-constDeclare : VAL ID ':' dataType '=' expr	{
-												Trace("val id : type = expr ---> declaration");
-												if($4 != $6->type)
-													yyerror("type error: dataType and expr");
-												$6->scope = s_const;
-												$6->init = true;
-												int t = table.insert(*$2, *$6);
-												if(t == -1)
-													yyerror(*$2 + " has been declared");
-											}
-		 	 | VAL ID '=' expr				{
-												Trace("val id = expr ---> declaration");
-												$4->scope = s_const;
-												$4->init = true;
-												int t = table.insert(*$2, *$4);
-												if(t == -1)
-													yyerror(*$2 + " has been declared");
-											};
+constDeclare : VAL ID ':' dataType '=' expr		{
+													Trace("val id : type = expr ---> declaration");
+													if($4 != $6->type)
+														yyerror("type error: dataType and expr");
+													$6->scope = s_const;
+													$6->init = true;
+													int t = table.insert(*$2, *$6);
+													if(t == -1)
+														yyerror(*$2 + " has been declared");
+												}
+		 	 | VAL ID '=' expr					{
+													Trace("val id = expr ---> declaration");
+													$4->scope = s_const;
+													$4->init = true;
+													int t = table.insert(*$2, *$4);
+													if(t == -1)
+														yyerror(*$2 + " has been declared");
+												};
 //////////////////////// expression ////////////////////////
 expr : '(' expr ')' 		{
 								Trace("(expr) ---> expr");
 								$$ = $2;
 							}
-	| '-' expr %prec UMINUS 	{ 
-									Trace("-expr ---> expr");
-									if($2->type == t_int)
-									{
-										$2->value.v_int *= -1;
-										$$ = $2;
-									}
-									else if($2->type == t_float)
-									{
-										$2->value.v_float *= -1;
-										$$ = $2;
-									}
-									else
-									{
-										yyerror("type error -> - expr");
-									}
+	| '-' expr %prec UMINUS { 
+								Trace("-expr ---> expr");
+								if($2->type == t_int)
+								{
+									$2->value.v_int *= -1;
+									$$ = $2;
 								}
+								else if($2->type == t_float)
+								{
+									$2->value.v_float *= -1;
+									$$ = $2;
+								}
+								else
+								{
+									yyerror("type error -> - expr");
+								}
+							}
 	 | expr '+' expr 		{ 
 								Trace("expr + expr ---> expr");
 								if($1->type == t_int && $3->type == t_int)
@@ -503,7 +487,7 @@ expr : '(' expr ')' 		{
 								Trace("bool_expr ---> expr");
 								$$ = $1;
 							}
-	 | ID '[' expr ']' 	{
+	 | ID '[' expr ']' 		{
 								Trace("ID[expr] ---> expr");
 								IDinfo *id = table.lookup(*$1);
 								if(id == NULL)
@@ -713,41 +697,41 @@ bool_expr : '!' expr 		{
 									$$->value.v_bool = $1->value.v_bool || $3->value.v_bool;
 								}
 							};
-dataType : INT		{
-						$$ = t_int;
-					}
-		 | FLOAT	{
-						$$ = t_float;
-					}
-		 | CHAR		{
-						$$ = t_char;
-					}
-		 | STRING	{
-						$$ = t_string;
-					}
-		 | BOOLEAN	{
-						$$ = t_bool;
-					};
-values : T_INT		{
-						Trace("T_INT ---> values");
-						$$ = set_int($1);
-					}
-	   | T_FLOAT	{
-						Trace("T_FLOAT ---> values");
-						$$ = set_float($1);
-					}
-	   | T_CHAR		{
-						Trace("T_CHAR ---> values");
-						$$ = set_char($1);
-					}
-	   | T_STRING	{
-						Trace("T_STRING ---> values");
-						$$ = set_string(*$1);
-					}
-	   | T_BOOL		{
-						Trace("T_BOOL ---> values");
-						$$ = set_bool($1);
-					};
+dataType : INT			{
+							$$ = t_int;
+						}
+		 | FLOAT		{
+							$$ = t_float;
+						}
+		 | CHAR			{
+							$$ = t_char;
+						}
+		 | STRING		{
+							$$ = t_string;
+						}
+		 | BOOLEAN		{
+							$$ = t_bool;
+						};
+values : T_INT			{
+							Trace("T_INT ---> values");
+							$$ = set_int($1);
+						}
+	   | T_FLOAT		{
+							Trace("T_FLOAT ---> values");
+							$$ = set_float($1);
+						}
+	   | T_CHAR			{
+							Trace("T_CHAR ---> values");
+							$$ = set_char($1);
+						}
+	   | T_STRING		{
+							Trace("T_STRING ---> values");
+							$$ = set_string(*$1);
+						}
+	   | T_BOOL			{
+							Trace("T_BOOL ---> values");
+							$$ = set_bool($1);
+						};
 %%
 
 int main(int argc, char *argv[])

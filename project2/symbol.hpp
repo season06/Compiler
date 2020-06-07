@@ -5,9 +5,45 @@
 #include <iomanip>
 using namespace std;
 
-string IDtype2str(int type);
-string IDscope2str(int scope);
+/* enum (int) to string */
+string IDtype2str(int type)
+{
+	switch(type)
+	{
+		case 0:
+			return "";
+		case 1:
+			return "int";
+		case 2:
+			return "float";
+		case 3:
+			return "char";
+		case 4:
+			return "string";
+		case 5:
+			return "bool";
+	}
+}
+string IDscope2str(int scope)
+{
+	switch(scope)
+	{
+		case 0:
+			return "";
+		case 1:
+			return "object";
+		case 2:
+			return "function";
+		case 3:
+			return "variable";
+		case 4:
+			return "const";
+		case 5:
+			return "array";
+	}
+}
 
+/* ID infomation */
 enum IDtype
 {
 	t_unknown = 0,
@@ -30,11 +66,11 @@ enum IDscope
 
 typedef struct IDvalue
 {
-	int v_int;
-	float v_float;
-	char v_char;
-	string v_string;
-	bool v_bool;
+	int 	v_int;
+	float 	v_float;
+	char 	v_char;
+	string 	v_string;
+	bool 	v_bool;
 } IDvalue;
 
 class IDinfo
@@ -46,14 +82,17 @@ public:
 	int scope;
 	// init or not
 	bool init;
+
 	// for array
 	vector<IDinfo> arr_value;
 	int arr_size;
+
 	// for function
 	int return_type = 0;
 	vector<IDinfo> args_value;
 	IDinfo *return_value;
 
+	// constructor
 	IDinfo()
 	{
 		id = "";
@@ -117,15 +156,12 @@ IDinfo *set_bool(bool val)
 }
 
 
-
-
-
-
+/* A Symbol Table */
 class Symbol
 {
 public:
 	map<string, IDinfo> idmap;
-	vector<string> id_name;
+	vector<string> id_name;		// map has no order, user vector instead
 	Symbol() {}
 	int insert(string id, const IDinfo &f)
 	{
@@ -228,6 +264,7 @@ public:
 	}
 };
 
+/* All Symbol Tables */
 class SymbolTables
 {
 public:
@@ -270,40 +307,3 @@ public:
 		}
 	}
 };
-
-string IDtype2str(int type)
-{
-	switch(type)
-	{
-		case 0:
-			return "";
-		case 1:
-			return "int";
-		case 2:
-			return "float";
-		case 3:
-			return "char";
-		case 4:
-			return "string";
-		case 5:
-			return "bool";
-	}
-}
-string IDscope2str(int scope)
-{
-	switch(scope)
-	{
-		case 0:
-			return "";
-		case 1:
-			return "object";
-		case 2:
-			return "function";
-		case 3:
-			return "variable";
-		case 4:
-			return "const";
-		case 5:
-			return "array";
-	}
-}
