@@ -1,12 +1,12 @@
-object ex {
-	def main()
-	{
-		var i:int = 0
-		for ( i <- 0 to 99 )
-		{
-			i = i+1
-		}
+object test
+{
+	var a:int = 30
+	def add(){
+		a = a + 1
+	}
 
-		return 0
+	def main () {
+		add()
+		println(a)
 	}
 }

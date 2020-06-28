@@ -4,7 +4,6 @@
 
 object example {
   val a = 5
-
   var c:int
 
   // function declaration

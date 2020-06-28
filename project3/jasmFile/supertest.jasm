@@ -1,0 +1,170 @@
+class supertest
+{
+	field static bool ba = 1
+	field static bool bb = 0
+	field static int ia = 5
+	field static int ib
+			method public static void correct(, , int, bool, int)
+	max_stack 15
+	max_locals 15
+	{
+L0:
+		iload 3
+		ifeq L1
+		iload 2
+		sipush 1
+		iadd
+		istore 2
+		iload 2
+		sipush 1
+		isub
+		istore 2
+		iload 2
+		sipush 5
+		isub
+		iflt L2
+		iconst_0
+		goto L3
+L2:
+		iconst_1
+L3:
+		ifeq L4
+		iload 2
+		sipush 1
+		idiv
+		istore 2
+		iload 2
+		sipush 1
+		imul
+		istore 2
+L4:
+				ldc "is a string"
+		isub
+		ifeq L5
+		iconst_0
+		goto L6
+L5:
+		iconst_1
+L6:
+						isub
+		ifeq L7
+		iconst_0
+		goto L8
+L7:
+		iconst_1
+L8:
+						isub
+		ifne L9
+		iconst_0
+		goto L10
+L9:
+		iconst_1
+L10:
+		iconst_1
+		ixor
+		iand
+		ior
+		ifeq L11
+		istore 1
+		goto L12
+L11:
+		istore 1
+L12:
+		goto L0
+L1:
+		iconst_1 
+		istore 3
+		iload 3
+		iconst_1 
+		isub
+		ifge L13
+		iconst_0
+		goto L14
+L13:
+		iconst_1
+L14:
+		ifeq L15
+		iconst_0 
+		istore 3
+L15:
+		iload 2
+		sipush 9
+		isub
+		ifle L16
+		iconst_0
+		goto L17
+L16:
+		iconst_1
+L17:
+		ifeq L18
+		sipush 5
+		istore 2
+L18:
+				ireturn
+	}
+	method public static int fab(int)
+	max_stack 15
+	max_locals 15
+	{
+		iload 0
+		sipush 1
+		ineg
+		isub
+		ifne L19
+		iconst_0
+		goto L20
+L19:
+		iconst_1
+L20:
+		ifeq L21
+		iload 0
+		ireturn
+L21:
+		iload 0
+		sipush 2
+		isub
+		iflt L22
+		iconst_0
+		goto L23
+L22:
+		iconst_1
+L23:
+		ifeq L24
+		iload 0
+		iload 0
+		goto L25
+L24:
+		iload 0
+		iload 0
+		sipush 1
+		isub
+		invokestatic void supertest.()
+		iload 0
+		sipush 2
+		isub
+		invokestatic void supertest.()
+		iadd
+L25:
+		iload 0
+		ireturn
+	}
+	method public static void main(java.lang.String[])
+	max_stack 15
+	max_locals 15
+	{
+		sipush 0
+		istore 0
+		iload 0
+		sipush 1
+		ineg
+						getstatic int supertest.ia
+		getstatic int supertest.ba
+		getstatic int supertest.ib
+		invokestatic void supertest.correct(, , int, bool, int)
+		putstatic int supertest.sa
+		getstatic java.io.PrintStream java.lang.System.out
+		sipush 50
+		invokestatic void supertest.fab(int)
+		invokevirtual void java.io.PrintStream.print(		return
+	}
+}

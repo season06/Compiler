@@ -1,0 +1,29 @@
+class z
+{
+	field static int a = 30
+	method public static void add(int, int)
+	max_stack 15
+	max_locals 15
+	{
+		sipush 1
+		istore 2
+		iload 2
+		iload 0
+		iadd
+		ireturn
+		return
+	}
+	method public static void main(java.lang.String[])
+	max_stack 15
+	max_locals 15
+	{
+		sipush 1
+		sipush 2
+		invokestatic void z.add(int, int)
+		istore 0
+		getstatic java.io.PrintStream java.lang.System.out
+		getstatic int z.a
+		invokevirtual void java.io.PrintStream.print(int)
+		return
+	}
+}

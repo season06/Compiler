@@ -16,7 +16,7 @@ class example
 	{
 		sipush 5
 		sipush 10
-		invokestatic void example.add(int, int)
+		invokestatic int example.add(int, int)
 		putstatic int example.c
 		getstatic int example.c
 		sipush 10

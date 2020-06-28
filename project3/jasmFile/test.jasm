@@ -1,0 +1,24 @@
+class test
+{
+	field static int a = 30
+	method public static void add()
+	max_stack 15
+	max_locals 15
+	{
+		getstatic int test.a
+		sipush 1
+		iadd
+		putstatic int test.a
+		return
+	}
+	method public static void main(java.lang.String[])
+	max_stack 15
+	max_locals 15
+	{
+		invokestatic void test.add()
+		getstatic java.io.PrintStream java.lang.System.out
+		getstatic int test.a
+		invokevirtual void java.io.PrintStream.println(int)
+		return
+	}
+}

@@ -3,7 +3,7 @@
  * Compute sum = 1 + 2 + ... + n
  */
 
-object Sigma
+object sigma
 {
   // constants and variables
   val n = 10

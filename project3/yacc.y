@@ -120,7 +120,7 @@ program : OBJECT ID 				{
 											yyerror("no main function");
 
 										fp << "}";
-										//table.dump();
+										table.dump();
 										table.pop_table();
 									};
 
@@ -184,10 +184,15 @@ funcDec : DEF ID 									{
 													}
 		'{' blockContent '}'						{
 														//Trace("def ID (args) type {} ---> funcDec");
-														//table.dump();
+														IDinfo *id = table.lookup(*$2);
+														if(id->return_type == t_unknown && id->hasReturn == true)
+															yyerror("function has no return type");
+														else if(id->return_type != t_unknown && id->hasReturn == false)
+															yyerror("function has no return value");
+
+														table.dump();
 														table.pop_table();
 
-														IDinfo *id = table.lookup(*$2);
 														if(id->return_type == t_unknown)
 														{
 															printTab();
@@ -206,7 +211,7 @@ args : arg ',' args						{
 											//Trace("arg ---> args");
 										}
 	 |										/* empty */
-	 ; 
+	 ;
 arg : ID ':' dataType					{
 											//Trace("ID:type ---> arg");
 											IDinfo *f = new IDinfo($3, s_variable, false);
@@ -229,6 +234,7 @@ returnType : ':' dataType 				{
 returnVal : RETURN expr 				{
 											//Trace("return expr ---> returnVal");
 											table.list[table.top-1].idmap[nowFunc].return_value = new IDinfo(*$2);
+											table.list[table.top-1].idmap[nowFunc].hasReturn = true;
 
 											printTab();
 											fp << "ireturn" << "\n";
@@ -263,9 +269,9 @@ function_invoc : ID 					{
 
 											printTab();
 											fp << "invokestatic ";
-											if(id->type == t_int)
+											if(id->return_type == t_int)
 												fp << "int ";
-											else if(id->type == t_bool)
+											else if(id->return_type == t_bool)
 												fp << "bool ";
 											else
 												fp << "void ";
@@ -309,9 +315,20 @@ stat : ID '=' expr 					{
 											yyerror(*$1 + " not found");
 										if(id->scope != s_variable)
 											yyerror(*$1 + " is not variable, can't be assign");
-										id->setValue($3->value);
-										id->init = true;
+										if($3->scope == s_function && $3->hasReturn == false)
+											yyerror("function has no return value, can't be assign");
+										
+										if($3->scope == s_function)
+											id->setValue($3->return_value->value);
+										else
+											id->setValue($3->value);
 
+										if($3->scope == s_function)
+											id->type = $3->return_value->type;
+										else
+											id->type = $3->type;
+										id->init = true;
+										
 										if(id->global)
 										{
 											printTab();
@@ -447,7 +464,7 @@ block : '{' 						{
 									}
 		blockContent '}' 			{
 										//Trace("{blockContent} ---> block");
-										//table.dump();
+										table.dump();
 										table.pop_table();
 									};
 blockContent : declaration blockContent
@@ -485,7 +502,7 @@ varDeclare : VAR ID ':' dataType '[' T_INT ']'	{
 														printTab();
 														if(id->type == t_int)
 															fp << "field static int " << id->id << " = " << id->value.v_int << "\n";
-														else if(id->type == t_int)
+														else if(id->type == t_bool)
 															fp << "field static bool " << id->id << " = " << id->value.v_bool << "\n";
 													}
 													else
@@ -512,7 +529,7 @@ varDeclare : VAR ID ':' dataType '[' T_INT ']'	{
 														printTab();
 														if(id->type == t_int)
 															fp << "field static int " << id->id << " = " << id->value.v_int << "\n";
-														else if(id->type == t_int)
+														else if(id->type == t_bool)
 															fp << "field static bool " << id->id << " = " << id->value.v_bool << "\n";
 													}
 													else
@@ -555,7 +572,7 @@ varDeclare : VAR ID ':' dataType '[' T_INT ']'	{
 													if(id->global)
 													{
 														printTab();
-														fp << "field static int" << id->id << "\n";
+														fp << "field static int " << id->id << "\n";
 													}
 													else
 													{
@@ -607,7 +624,7 @@ expr : '(' expr ')' 		{
 								else
 									yyerror("type error -> - expr");
 
-								if(!isConst)
+								if(!isConst && !table.isGlobal())
 								{
 									printTab();
 									fp << "ineg\n";
@@ -623,7 +640,7 @@ expr : '(' expr ')' 		{
 								else
 									yyerror("type error -> expr + expr");
 								
-								if(!isConst)
+								if(!isConst && !table.isGlobal())
 								{
 									printTab();
 									fp << "iadd\n";
@@ -639,7 +656,7 @@ expr : '(' expr ')' 		{
 								else
 									yyerror("type error -> expr - expr");
 								
-								if(!isConst)
+								if(!isConst && !table.isGlobal())
 								{
 									printTab();
 									fp << "isub\n";
@@ -655,7 +672,7 @@ expr : '(' expr ')' 		{
 								else
 									yyerror("type error -> expr * expr");
 								
-								if(!isConst)
+								if(!isConst && !table.isGlobal())
 								{
 									printTab();
 									fp << "imul\n";
@@ -671,7 +688,7 @@ expr : '(' expr ')' 		{
 								else
 									yyerror("type error -> expr / expr");
 								
-								if(!isConst)
+								if(!isConst && !table.isGlobal())
 								{
 									printTab();
 									fp << "idiv\n";
@@ -687,7 +704,7 @@ expr : '(' expr ')' 		{
 								else
 									yyerror("type error -> expr % expr");
 								
-								if(!isConst)
+								if(!isConst && !table.isGlobal())
 								{
 									printTab();
 									fp << "irem\n";
@@ -713,6 +730,7 @@ expr : '(' expr ')' 		{
 							}
 	 | function_invoc		{
 		 						//Trace("function_invoc ---> expr");
+								$$ = $1;
 							}
 	 | ID 					{
 								//Trace("ID ---> expr");
@@ -761,7 +779,7 @@ bool_expr : '!' expr 		{
 								else
 									$$->value.v_bool = !($2->value.v_bool);
 
-								if(!isConst)
+								if(!isConst && !table.isGlobal())
 								{
 									printTab();
 									fp << "iconst_1" << "\n";
@@ -874,7 +892,7 @@ bool_expr : '!' expr 		{
 									$$->value.v_bool = $1->value.v_bool && $3->value.v_bool;
 								}
 
-								if(!isConst)
+								if(!isConst && !table.isGlobal())
 								{
 									printTab();
 									fp << "iand\n";
@@ -891,7 +909,7 @@ bool_expr : '!' expr 		{
 									$$->value.v_bool = $1->value.v_bool || $3->value.v_bool;
 								}
 
-								if(!isConst)
+								if(!isConst && !table.isGlobal())
 								{
 									printTab();
 									fp << "ior\n";
@@ -916,7 +934,7 @@ values : T_INT			{
 							//Trace("T_INT ---> values");
 							$$ = set_int($1);
 
-							if(!isConst)
+							if(!isConst && !table.isGlobal())
 							{
 								printTab();
 								fp << "sipush " << $1 << "\n";
@@ -934,7 +952,7 @@ values : T_INT			{
 							//Trace("T_STRING ---> values");
 							$$ = set_string(*$1);
 
-							if(!isConst)
+							if(!isConst && !table.isGlobal())
 							{
 								printTab();
 								fp << "ldc \"" << *$1 << "\"" << "\n";
@@ -944,7 +962,7 @@ values : T_INT			{
 							//Trace("T_BOOL ---> values");
 							$$ = set_bool($1);
 
-							if(!isConst)
+							if(!isConst && !table.isGlobal())
 							{
 								printTab();
 								if($1 == true)
@@ -986,7 +1004,8 @@ int main(int argc, char *argv[])
     else
         yyin = stdin;
 
-	fp.open("output.jasm", ios::out);
+	string filename = "./jasmFile/" + string(argv[2]) + ".jasm";
+	fp.open(filename, ios::out);
 	if(!fp)
 	{
 		cout << "open file error\n";
@@ -997,7 +1016,7 @@ int main(int argc, char *argv[])
 		yyerror("parsing error");
 	else
 	{
-		//table.dump();
+		table.dump();
 		cout << "=============Parsing Success=============\n";
 	}
 	fp.close();

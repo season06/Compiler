@@ -94,6 +94,7 @@ public:
 	int return_type = 0;
 	vector<IDinfo> args_value;
 	IDinfo *return_value;
+	bool hasReturn = false;
 
 	// constructor
 	IDinfo()
@@ -192,7 +193,7 @@ public:
 			i.scope = s_variable;
 		}
 	}
-	int insert_args(string now_func, string id, const IDinfo f)
+	int insert_args(string now_func, string id, const IDinfo &f)
 	{
 		for(int i=0;i<idmap[now_func].args_value.size();i++)
 			if(idmap[now_func].args_value[i].id == id)
