@@ -1,0 +1,21 @@
+object global
+{
+	val a = false
+	val b = 19
+
+	def global(): boolean
+	{
+		if(b>50)
+			println("big")
+		else if (b<20)
+			println("small")
+
+		return a
+	}
+	def main ()
+	{
+		var bool
+		bool = global()
+		println(bool)
+	}
+}

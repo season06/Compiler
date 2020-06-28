@@ -414,6 +414,9 @@ ifStat : IF '(' bool_expr ')' 		{
 										
 										fp << "L" << elseLabel.back() << ":" << "\n";
 										elseLabel.pop_back();
+
+										printTab();
+										fp << "nop" << "\n";
 									}
 	   ;
 elseStat : ELSE						{
@@ -423,6 +426,9 @@ elseStat : ELSE						{
 										elseLabel.pop_back();
 										elseLabel.push_back(nowLabel);
 										nowLabel++;
+
+										printTab();
+										fp << "nop" << "\n";
 									}
 		   block_or_stat			{
 			   							//Trace("else block ---> elseStat");
@@ -447,6 +453,9 @@ loopStat : 	WHILE								{
 													printTab();
 													fp << "goto " << "L" << $1.beginLabel << "\n";
 													fp << "L" << $1.exitLable << ":" << "\n";
+
+													printTab();
+													fp << "nop" << "\n";
 												}
 		 | FOR '(' ID LT '-' T_INT TO T_INT ')' {
 													IDinfo *id = table.lookup(*$3);
@@ -503,7 +512,7 @@ varDeclare : VAR ID ':' dataType '[' T_INT ']'	{
 														if(id->type == t_int)
 															fp << "field static int " << id->id << " = " << id->value.v_int << "\n";
 														else if(id->type == t_bool)
-															fp << "field static bool " << id->id << " = " << id->value.v_bool << "\n";
+															fp << "field static int " << id->id << " = " << id->value.v_bool << "\n";
 													}
 													else
 													{
@@ -530,7 +539,7 @@ varDeclare : VAR ID ':' dataType '[' T_INT ']'	{
 														if(id->type == t_int)
 															fp << "field static int " << id->id << " = " << id->value.v_int << "\n";
 														else if(id->type == t_bool)
-															fp << "field static bool " << id->id << " = " << id->value.v_bool << "\n";
+															fp << "field static int " << id->id << " = " << id->value.v_bool << "\n";
 													}
 													else
 													{
