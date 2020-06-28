@@ -13,7 +13,6 @@ extern "C"
 #define LIST                    strcat(buf, yytext)
 #define token(t)                {							\
                                     LIST;					\
-                                    printf("<%s>\n", yytext);	\
 									return t;				\
                                 }
 
@@ -162,8 +161,8 @@ while     { token(WHILE); }
                 }
 <S_STRING>\n    {
 					LIST;
-                	printf("%d: %s\n", linenum, buf);
-                	printf("bad character:’%s’\n", "\"");
+                	//printf("%d: %s\n", linenum, buf);
+                	//printf("bad character:’%s’\n", "\"");
 					BEGIN(INITIAL);
                 	exit(-1);
                 }

@@ -36,7 +36,7 @@ bool isConst = false;
 vector<int> elseLabel;
 
 string nowFunc = "";
-vector<vector<IDinfo>> func_call;
+vector<vector<IDinfo>> funcCall;
 
 %}
 /****** Definition of yytype *****/
@@ -51,14 +51,14 @@ vector<vector<IDinfo>> func_call;
 
 	IDinfo* info;
 	IDtype type;
-	vector<IDinfo*>* func_call;
+	vector<IDinfo*>* funcCall;
 };
 
 %union {
 	struct {
 		int beginLabel;
 		int exitLable;
-	} whileLoop
+	} whileLoop;
 }
 
 /* declare a terminal */
@@ -100,9 +100,9 @@ vector<vector<IDinfo>> func_call;
 %%
 //////////////////////// object ////////////////////////
 program : OBJECT ID 				{
-										Trace("create object table");
+										//Trace("create object table");
 										objName = *$2;
-										fp << "class" << objName << "\n" << "{" << "\n";
+										fp << "class " << objName << "\n" << "{" << "\n";
 										nowTab++;
 
 										table.push_table();
@@ -113,14 +113,14 @@ program : OBJECT ID 				{
 											yyerror(*$2 + " has been declared");
 									}
 		  '{' objContent '}'		{
-										Trace("object ID objBlock ---> program");
+										//Trace("object ID objBlock ---> program");
 
 										IDinfo id = table.list[table.top].idmap["main"];
 										if(id.scope != s_function)
 											yyerror("no main function");
 
 										fp << "}";
-										table.dump();
+										//table.dump();
 										table.pop_table();
 									};
 
@@ -134,7 +134,7 @@ funcDecs : funcDec funcDecs
 		 | funcDec
 		 ;
 funcDec : DEF ID 									{
-														Trace("create function table");
+														//Trace("create function table");
 														IDinfo *f = new IDinfo(t_unknown, s_function, false);
 														int t = table.insert(*$2, *f);
 														if(t == -1)
@@ -144,30 +144,29 @@ funcDec : DEF ID 									{
 
 														nowStack = 0;
 														printTab();
-														ph << "method public static ";
-													} 
+														fp << "method public static ";
+													}
 		'(' args ')' returnType						{
 														IDinfo *id = table.lookup(*$2);
-														if(id->id == "main")
+														if(*$2 == "main")
 															fp << "void main(java.lang.String[])" << "\n";
 														else
 														{
-															if(id->type == t_int)
+															if(id->return_type == t_int)
 																fp << "int ";
-															else if(id->type == t_bool)
+															else if(id->return_type == t_bool)
 																fp << "bool ";
 															else
 																fp << "void ";
-															
-															fp << id->id << "(";
+															fp << *$2 << "(";
 
 															vector<IDinfo> parm = id->args_value;
 															for(int i = 0; i < parm.size(); i++)
 															{
 																if(parm[i].type == t_int)
-																	fp << "int ";
+																	fp << "int";
 																else if(parm[i].type == t_bool)
-																	fp << "bool ";
+																	fp << "bool";
 																
 																if(i != parm.size()-1)
 																	fp << ", ";
@@ -184,11 +183,16 @@ funcDec : DEF ID 									{
 														nowTab++;
 													}
 		'{' blockContent '}'						{
-														Trace("def ID (args) type {} ---> funcDec");
-														//if($7 != $10->type)
-														//	yyerror("type error: function type and return type");
-														table.dump();
+														//Trace("def ID (args) type {} ---> funcDec");
+														//table.dump();
 														table.pop_table();
+
+														IDinfo *id = table.lookup(*$2);
+														if(id->return_type == t_unknown)
+														{
+															printTab();
+															fp << "return" << "\n";
+														}
 
 														nowTab--;
 														printTab();
@@ -196,51 +200,52 @@ funcDec : DEF ID 									{
 													};
 
 args : arg ',' args						{
-											Trace("args, arg ---> args");
+											//Trace("args, arg ---> args");
 										}
 	 |  arg 							{
-											Trace("arg ---> args");
+											//Trace("arg ---> args");
 										}
 	 |										/* empty */
 	 ; 
 arg : ID ':' dataType					{
-											Trace("ID:type ---> arg");
-											IDinfo *id = new IDinfo($3, s_variable, false);
-											int t = table.insert(*$1, *id);
-											t = table.list[table.top].insert_args(nowFunc, *$1, *id);
+											//Trace("ID:type ---> arg");
+											IDinfo *f = new IDinfo($3, s_variable, false);
+											int t = table.insert(*$1, *f);
+											t = table.list[table.top-1].insert_args(nowFunc, *$1, *f);
 											if(t == -1)
 												yyerror(*$1 + " has been declared");
 
-											id->stackIndex = nowLabel;
-											nowLabel++;
+											IDinfo *id = table.lookup(*$1);
+											id->stackIndex = nowStack;
+											nowStack++;
 										};
 
 returnType : ':' dataType 				{
-											table.list[table.top].idmap[nowFunc].return_type = $2;
+											table.list[table.top-1].idmap[nowFunc].return_type = $2;
 										}
 		   | 							{	/* empty */
-			   								table.list[table.top].idmap[nowFunc].return_type = t_unknown;
+			   								table.list[table.top-1].idmap[nowFunc].return_type = t_unknown;
 		   								}; 
 returnVal : RETURN expr 				{
-											Trace("return expr ---> returnVal");
-											table.list[table.top].idmap[nowFunc].return_value = new IDinfo(*$2);
+											//Trace("return expr ---> returnVal");
+											table.list[table.top-1].idmap[nowFunc].return_value = new IDinfo(*$2);
 
 											printTab();
 											fp << "ireturn" << "\n";
 										}
 	 	  | RETURN 						{
-											Trace("return ---> returnVal");
-											table.list[table.top].idmap[nowFunc].return_value = new IDinfo();
+											//Trace("return ---> returnVal");
+											table.list[table.top-1].idmap[nowFunc].return_value = new IDinfo();
 
 											printTab();
 											fp << "return" << "\n";
 										};
 //////////////////////// call function ////////////////////////
 function_invoc : ID 					{
-											func_call.push_back(vector<IDinfo>());
+											funcCall.push_back(vector<IDinfo>());
 										}
 				'('	parameters ')'		{
-											Trace("ID(parameter) ---> function_invoc");
+											//Trace("ID(parameter) ---> function_invoc");
 											IDinfo *id = table.lookup(*$1);
 											if(id == NULL)
 												yyerror(*$1 + " not found");
@@ -250,10 +255,10 @@ function_invoc : ID 					{
 											vector<IDinfo> parm = id->args_value;
 											for(int i=0; i<parm.size(); i++)
 											{
-												if(func_call[func_call.size()-1][i].type != parm[i].type)
+												if(funcCall[funcCall.size()-1][i].type != parm[i].type)
 													yyerror("type error: parameter and declaration");
 											}
-											func_call.pop_back();
+											funcCall.pop_back();
 											$$ = id;
 
 											printTab();
@@ -270,9 +275,9 @@ function_invoc : ID 					{
 											for(int i = 0; i < parm.size(); i++)
 											{
 												if(parm[i].type == t_int)
-													fp << "int ";
+													fp << "int";
 												else if(parm[i].type == t_bool)
-													fp << "bool ";
+													fp << "bool";
 												
 												if(i != parm.size()-1)
 													fp << ", ";
@@ -283,14 +288,14 @@ parameters: parameter
 		  |
 		  ;
 parameter : para ',' parameter			{
-											Trace("expr, parameter ---> function parameter");
+											//Trace("expr, parameter ---> function parameter");
 										}
 		  | para 						{
-											Trace("expr ---> function parameter");
+											//Trace("expr ---> function parameter");
 		  								}
 		;							
 para: expr								{
-											func_call[func_call.size()-1].push_back(*$1);
+											funcCall[funcCall.size()-1].push_back(*$1);
 										}
 
 //////////////////////// statement ////////////////////////
@@ -298,7 +303,7 @@ stats : stat stats
 	  |
 	  ;
 stat : ID '=' expr 					{
-										Trace("ID[expr] ---> stat");
+										//Trace("ID[expr] ---> stat");
 										IDinfo *id = table.lookup(*$1);
 										if(id == NULL)
 											yyerror(*$1 + " not found");
@@ -319,7 +324,7 @@ stat : ID '=' expr 					{
 										}
 									}
 	| ID '[' expr ']' '=' expr 		{
-										Trace("ID[expr]=expr ---> stat");
+										//Trace("ID[expr]=expr ---> stat");
 										IDinfo *id = table.lookup(*$1);
 										if(id == NULL)
 											yyerror(*$1 + " not found");
@@ -336,55 +341,62 @@ stat : ID '=' expr 					{
 										id->init = true;
 									}
 	| 	PRINT  						{	
-										Trace("print ---> stat");
+										//Trace("print ---> stat");
 										printTab();
 										fp << "getstatic java.io.PrintStream java.lang.System.out" << "\n";
 									}
 		expr						{
 										printTab();
 										fp << "invokevirtual void java.io.PrintStream.print(";
-										if($3.type == t_int)
+										if($3->type == t_int)
 											fp << "int)" << "\n";
-										else if($3.type == t_bool)
+										else if($3->type == t_bool)
 											fp << "boolean)" << "\n";
-										else if($3.type == t_string)
+										else if($3->type == t_string)
 											fp << "java.lang.String)" << "\n";
 									}
 	| 	PRINTLN  					{	
-										Trace("println ---> stat");
+										//Trace("println ---> stat");
 										printTab();
 										fp << "getstatic java.io.PrintStream java.lang.System.out" << "\n";
 									}
 		expr						{
 										printTab();
 										fp << "invokevirtual void java.io.PrintStream.println(";
-										if($3.type == t_int)
+										if($3->type == t_int)
 											fp << "int)" << "\n";
-										else if($3.type == t_bool)
+										else if($3->type == t_bool)
 											fp << "boolean)" << "\n";
-										else if($3.type == t_string)
+										else if($3->type == t_string)
 											fp << "java.lang.String)" << "\n";
 									}
-	| READ ID 						{	Trace("read ID ---> stat");		}
-	| returnVal						{	Trace("returnVal ---> stat");	}
-	| ifStat						{	Trace("ifStat ---> stat");		}
-	| loopStat						{	Trace("loopStat ---> stat");	}
-	| function_invoc				{	Trace("function_invoc ---> stat");	}
+	| READ ID 						{
+										//Trace("read ID ---> stat");
+									}
+	| returnVal						{
+										//Trace("returnVal ---> stat");
+									}
+	| ifStat						{	
+										//Trace("ifStat ---> stat");
+									}
+	| loopStat						{
+										//Trace("loopStat ---> stat");
+									}
+	| function_invoc				{
+										//Trace("function_invoc ---> stat");
+									}
 	;
 ifStat : IF '(' bool_expr ')' 		{
 										printTab();
-										fp << "ifeq" << "L" << nowLabel << "\n";
+										fp << "ifeq " << "L" << nowLabel << "\n";
 										elseLabel.push_back(nowLabel);
 										nowLabel++;
 									}
 		 block_or_stat elseStat		{
-			 							Trace("IF (bool_expr) block elseStat ---> ifStat");
+			 							//Trace("IF (bool_expr) block elseStat ---> ifStat");
 										
 										fp << "L" << elseLabel.back() << ":" << "\n";
 										elseLabel.pop_back();
-
-										printTab();
-										fp << "nop" << "\n";
 									}
 	   ;
 elseStat : ELSE						{
@@ -392,14 +404,12 @@ elseStat : ELSE						{
 										fp << "goto " << "L" << nowLabel << "\n";
 										fp << "L" << elseLabel.back() << ":" << "\n";
 										elseLabel.pop_back();
-
 										elseLabel.push_back(nowLabel);
 										nowLabel++;
-
-										printTab();
-										fp << "nop" << "\n";
 									}
-		   block_or_stat			{	Trace("else block ---> elseStat");	}
+		   block_or_stat			{
+			   							//Trace("else block ---> elseStat");
+									}
 		 | //empty
 		 ;
 
@@ -415,13 +425,11 @@ loopStat : 	WHILE								{
 													nowLabel++;
 												}
 		   	block_or_stat						{
-													Trace("WHILE (expr) ---> loopStat");
+													//Trace("WHILE (expr) ---> loopStat");
 
 													printTab();
 													fp << "goto " << "L" << $1.beginLabel << "\n";
 													fp << "L" << $1.exitLable << ":" << "\n";
-													printTab();
-													fp << "nop" << "\n";
 												}
 		 | FOR '(' ID LT '-' T_INT TO T_INT ')' {
 													IDinfo *id = table.lookup(*$3);
@@ -429,17 +437,17 @@ loopStat : 	WHILE								{
 														yyerror(*$3 + " not found");
 												}
 		   block_or_stat						{	
-			   										Trace("for (id <- expr to expr) ---> loopStat");
+			   										//Trace("for (id <- expr to expr) ---> loopStat");
 		   										};
 block_or_stat: block | stat;
 
 block : '{' 						{
-										Trace("create block table");
+										//Trace("create block table");
 										table.push_table();
 									}
 		blockContent '}' 			{
-										Trace("{blockContent} ---> block");
-										table.dump();
+										//Trace("{blockContent} ---> block");
+										//table.dump();
 										table.pop_table();
 									};
 blockContent : declaration blockContent
@@ -454,7 +462,7 @@ declaration : varDeclare
 			| constDeclare
 
 varDeclare : VAR ID ':' dataType '[' T_INT ']'	{
-													Trace("var id : type [ expr ] ---> declaration");
+													//Trace("var id : type [ expr ] ---> declaration");
 													IDinfo *f = new IDinfo($4, s_array, false);
 													int t = table.insert(*$2, *f);
 													if(t == -1)
@@ -462,7 +470,7 @@ varDeclare : VAR ID ':' dataType '[' T_INT ']'	{
 													table.list[table.top].insert_arr(*$2, $4, $6);
 												}
 		   | VAR ID ':' dataType '=' expr 		{
-													Trace("var id : type = expr ---> declaration");
+													//Trace("var id : type = expr ---> declaration");
 													if($4 != $6->type)
 														yyerror("type error: dataType and expr");
 													$6->scope = s_variable;
@@ -471,6 +479,7 @@ varDeclare : VAR ID ':' dataType '[' T_INT ']'	{
 													if(t == -1)
 														yyerror(*$2 + " has been declared");
 
+													IDinfo *id = table.lookup(*$2);
 													if(id->global)
 													{
 														printTab();
@@ -490,13 +499,14 @@ varDeclare : VAR ID ':' dataType '[' T_INT ']'	{
 													}
 												}
 		   | VAR ID '=' expr 					{
-													Trace("var id = expr ---> declaration");
+													//Trace("var id = expr ---> declaration");
 													$4->scope = s_variable;
 													$4->init = true;
 													int t = table.insert(*$2, *$4);
 													if(t == -1)
 														yyerror(*$2 + " has been declared");
 
+													IDinfo *id = table.lookup(*$2);
 													if(id->global)
 													{
 														printTab();
@@ -516,16 +526,17 @@ varDeclare : VAR ID ':' dataType '[' T_INT ']'	{
 													}
 												}
 		   | VAR ID ':' dataType 				{
-													Trace("var id : type ---> declaration");
+													//Trace("var id : type ---> declaration");
 													IDinfo *f = new IDinfo($4, s_variable, false);
 													int t = table.insert(*$2, *f);
 													if(t == -1)
 														yyerror(*$2 + " has been declared");
 
+													IDinfo *id = table.lookup(*$2);
 													if(id->global)
 													{
 														printTab();
-														fp << "field static " << id->type << " " << id->id << "\n";
+														fp << "field static " << IDtype2str(id->type) << " " << id->id << "\n";
 													}
 													else
 													{
@@ -534,12 +545,13 @@ varDeclare : VAR ID ':' dataType '[' T_INT ']'	{
 													}
 												}
 		   | VAR ID 							{
-													Trace("var id ---> declaration");
+													//Trace("var id ---> declaration");
 													IDinfo *f = new IDinfo(t_unknown, s_variable, false);
 													int t = table.insert(*$2, *f);
 													if(t == -1)
 														yyerror(*$2 + " has been declared");
 
+													IDinfo *id = table.lookup(*$2);
 													if(id->global)
 													{
 														printTab();
@@ -556,12 +568,12 @@ constDeclare : 	VAL ID ':' dataType '=' 		{
 													isConst = true;
 												}
 				expr							{
-													Trace("val id : type = expr ---> declaration");
-													if($4 != $6->type)
+													//Trace("val id : type = expr ---> declaration");
+													if($4 != $7->type)
 														yyerror("type error: dataType and expr");
-													$6->scope = s_const;
-													$6->init = true;
-													int t = table.insert(*$2, *$6);
+													$7->scope = s_const;
+													$7->init = true;
+													int t = table.insert(*$2, *$7);
 													if(t == -1)
 														yyerror(*$2 + " has been declared");
 
@@ -571,10 +583,10 @@ constDeclare : 	VAL ID ':' dataType '=' 		{
 				  									isConst = true;
 												}
 			   	expr							{
-													Trace("val id = expr ---> declaration");
-													$4->scope = s_const;
-													$4->init = true;
-													int t = table.insert(*$2, *$4);
+													//Trace("val id = expr ---> declaration");
+													$5->scope = s_const;
+													$5->init = true;
+													int t = table.insert(*$2, *$5);
 													if(t == -1)
 														yyerror(*$2 + " has been declared");
 
@@ -582,11 +594,11 @@ constDeclare : 	VAL ID ':' dataType '=' 		{
 												};
 //////////////////////// expression ////////////////////////
 expr : '(' expr ')' 		{
-								Trace("(expr) ---> expr");
+								//Trace("(expr) ---> expr");
 								$$ = $2;
 							}
 	| '-' expr %prec UMINUS { 
-								Trace("-expr ---> expr");
+								//Trace("-expr ---> expr");
 								if($2->type == t_int)
 								{
 									$2->value.v_int *= -1;
@@ -595,11 +607,14 @@ expr : '(' expr ')' 		{
 								else
 									yyerror("type error -> - expr");
 
-								printTab();
-								fp << "ineg\n";
+								if(!isConst)
+								{
+									printTab();
+									fp << "ineg\n";
+								}
 							}
 	 | expr '+' expr 		{ 
-								Trace("expr + expr ---> expr");
+								//Trace("expr + expr ---> expr");
 								if($1->type == t_int && $3->type == t_int)
 								{
 									$$->type = t_int;
@@ -608,11 +623,14 @@ expr : '(' expr ')' 		{
 								else
 									yyerror("type error -> expr + expr");
 								
-								printTab();
-								fp << "iadd\n";
+								if(!isConst)
+								{
+									printTab();
+									fp << "iadd\n";
+								}
 							}
 	 | expr '-' expr  		{ 
-								Trace("expr - expr ---> expr");
+								//Trace("expr - expr ---> expr");
 								if($1->type == t_int && $3->type == t_int)
 								{
 									$$->type = t_int;
@@ -621,11 +639,14 @@ expr : '(' expr ')' 		{
 								else
 									yyerror("type error -> expr - expr");
 								
-								printTab();
-								fp << "isub\n";
+								if(!isConst)
+								{
+									printTab();
+									fp << "isub\n";
+								}
 							}
 	 | expr '*' expr  		{ 
-								Trace("expr * expr ---> expr");
+								//Trace("expr * expr ---> expr");
 								if($1->type == t_int && $3->type == t_int)
 								{
 									$$->type = t_int;
@@ -634,11 +655,14 @@ expr : '(' expr ')' 		{
 								else
 									yyerror("type error -> expr * expr");
 								
-								printTab();
-								fp << "imul\n";
+								if(!isConst)
+								{
+									printTab();
+									fp << "imul\n";
+								}
 							}
 	 | expr '/' expr  		{ 
-								Trace("expr / expr ---> expr");
+								//Trace("expr / expr ---> expr");
 								if($1->type == t_int && $3->type == t_int)
 								{
 									$$->type = t_int;
@@ -647,11 +671,14 @@ expr : '(' expr ')' 		{
 								else
 									yyerror("type error -> expr / expr");
 								
-								printTab();
-								fp << "idiv\n";
+								if(!isConst)
+								{
+									printTab();
+									fp << "idiv\n";
+								}
 							}
 	 | expr '%' expr  		{ 
-								Trace("expr % expr ---> expr");
+								//Trace("expr % expr ---> expr");
 								if($1->type == t_int && $3->type == t_int)
 								{
 									$$->type = t_int;
@@ -660,15 +687,18 @@ expr : '(' expr ')' 		{
 								else
 									yyerror("type error -> expr % expr");
 								
-								printTab();
-								fp << "irem\n";
+								if(!isConst)
+								{
+									printTab();
+									fp << "irem\n";
+								}
 							}
 	 | bool_expr 			{
-								Trace("bool_expr ---> expr");
+								//Trace("bool_expr ---> expr");
 								$$ = $1;
 							}
 	 | ID '[' expr ']' 		{
-								Trace("ID[expr] ---> expr");
+								//Trace("ID[expr] ---> expr");
 								IDinfo *id = table.lookup(*$1);
 								if(id == NULL)
 									yyerror(*$1 + " not found");
@@ -681,9 +711,11 @@ expr : '(' expr ')' 		{
 									yyerror("Arrey index out of range");
 								$$ = new IDinfo(id->arr_value[index]);
 							}
-	 | function_invoc		{	Trace("function_invoc ---> expr");	}
+	 | function_invoc		{
+		 						//Trace("function_invoc ---> expr");
+							}
 	 | ID 					{
-								Trace("ID ---> expr");
+								//Trace("ID ---> expr");
 								IDinfo *id = table.lookup(*$1);
 								if(id == NULL)
 									yyerror(*$1 + " not found");
@@ -713,29 +745,32 @@ expr : '(' expr ')' 		{
 									{
 										printTab();
 										if(id->type == t_int || id->type == t_bool)
-											fp << "iload " << id->nowStack << "\n";
+											fp << "iload " << id->stackIndex << "\n";
 									}
 								}
 							}
 	 | values 				{
-								Trace("values ---> expr");
+								//Trace("values ---> expr");
 								$$ = $1;
 							};
 
 bool_expr : '!' expr 		{ 
-								Trace("! expr ---> bool_expr");
+								//Trace("! expr ---> bool_expr");
 								if($2->type != t_bool)
 									yyerror("type error -> ! expr");
 								else
 									$$->value.v_bool = !($2->value.v_bool);
 
-								printTab();
-								fp << "iconst_1" << "\n";
-								printTab();
-								fp << "ixor" << "\n";
+								if(!isConst)
+								{
+									printTab();
+									fp << "iconst_1" << "\n";
+									printTab();
+									fp << "ixor" << "\n";
+								}
 							}
 		  | expr LT expr 	{ 
-								Trace("expr < expr ---> bool_expr");
+								//Trace("expr < expr ---> bool_expr");
 								if($1->type == t_int && $3->type == t_int)
 									$$->value.v_bool = $1->value.v_int < $3->value.v_int;
 								else
@@ -744,7 +779,7 @@ bool_expr : '!' expr 		{
 								logic_operator("iflt");
 							}
 		  | expr LTQ expr 	{ 
-								Trace("expr <= expr ---> bool_expr");
+								//Trace("expr <= expr ---> bool_expr");
 								if($1->type == t_int && $3->type == t_int)
 									$$->value.v_bool = $1->value.v_int <= $3->value.v_int;
 								else
@@ -753,7 +788,7 @@ bool_expr : '!' expr 		{
 								logic_operator("ifle");
 							}
 		  | expr GT expr 	{ 
-								Trace("expr > expr ---> bool_expr");
+								//Trace("expr > expr ---> bool_expr");
 								if($1->type == t_int && $3->type == t_int)
 									$$->value.v_bool = $1->value.v_int > $3->value.v_int;
 								else
@@ -762,7 +797,7 @@ bool_expr : '!' expr 		{
 								logic_operator("ifgt");
 							}
 		  | expr GTQ expr 	{ 
-								Trace("expr >= expr ---> bool_expr");
+								//Trace("expr >= expr ---> bool_expr");
 								if($1->type == t_int && $3->type == t_int)
 									$$->value.v_bool = $1->value.v_int >= $3->value.v_int;
 								else
@@ -771,7 +806,7 @@ bool_expr : '!' expr 		{
 								logic_operator("ifge");
 							}
 		  | expr EQ expr 	{ 
-								Trace("expr == expr ---> bool_expr");
+								//Trace("expr == expr ---> bool_expr");
 								if($1->type == t_int && $3->type == t_int)
 								{
 									$$->value.v_bool = $1->value.v_int == $3->value.v_int;
@@ -800,7 +835,7 @@ bool_expr : '!' expr 		{
 								logic_operator("ifeq");
 							}
 	 	  | expr NEQ expr 	{ 
-								Trace("expr != expr ---> bool_expr");
+								//Trace("expr != expr ---> bool_expr");
 								if($1->type == t_int && $3->type == t_int)
 								{
 									$$->value.v_bool = $1->value.v_int != $3->value.v_int;
@@ -829,7 +864,7 @@ bool_expr : '!' expr 		{
 								logic_operator("ifne");
 							}
 		  | expr AND expr	{ 
-								Trace("expr && expr ---> bool_expr");
+								//Trace("expr && expr ---> bool_expr");
 								if($1->type != t_bool || $3->type != t_bool)
 								{
 									yyerror("type error -> expr && expr");
@@ -839,11 +874,14 @@ bool_expr : '!' expr 		{
 									$$->value.v_bool = $1->value.v_bool && $3->value.v_bool;
 								}
 
-								printTab();
-								fp << "iand\n";
+								if(!isConst)
+								{
+									printTab();
+									fp << "iand\n";
+								}
 							}
 		  | expr OR expr	{ 
-								Trace("expr || expr ---> bool_expr");
+								//Trace("expr || expr ---> bool_expr");
 								if($1->type != t_bool || $3->type != t_bool)
 								{
 									yyerror("type error -> expr || expr");
@@ -853,8 +891,11 @@ bool_expr : '!' expr 		{
 									$$->value.v_bool = $1->value.v_bool || $3->value.v_bool;
 								}
 
-								printTab();
-								fp << "ior\n";
+								if(!isConst)
+								{
+									printTab();
+									fp << "ior\n";
+								}
 							};
 dataType : INT			{
 							$$ = t_int;
@@ -872,36 +913,45 @@ dataType : INT			{
 							$$ = t_bool;
 						};
 values : T_INT			{
-							Trace("T_INT ---> values");
+							//Trace("T_INT ---> values");
 							$$ = set_int($1);
 
-							printTab();
-							fp << "sipush " << $1 << "\n";
+							if(!isConst)
+							{
+								printTab();
+								fp << "sipush " << $1 << "\n";
+							}
 						}
 	   | T_FLOAT		{
-							Trace("T_FLOAT ---> values");
+							//Trace("T_FLOAT ---> values");
 							$$ = set_float($1);
 						}
 	   | T_CHAR			{
-							Trace("T_CHAR ---> values");
+							//Trace("T_CHAR ---> values");
 							$$ = set_char($1);
 						}
 	   | T_STRING		{
-							Trace("T_STRING ---> values");
+							//Trace("T_STRING ---> values");
 							$$ = set_string(*$1);
 
-							printTab();
-							fp << "ldc \"" << *$1 << "\"" << "\n";
+							if(!isConst)
+							{
+								printTab();
+								fp << "ldc \"" << *$1 << "\"" << "\n";
+							}
 						}
 	   | T_BOOL			{
-							Trace("T_BOOL ---> values");
+							//Trace("T_BOOL ---> values");
 							$$ = set_bool($1);
 
-							printTab();
-							if($1 == true)
-								fp << "iconst_1 " << "\n";
-							else if($1 == false)
-								fp << "iconst_0 " << "\n";
+							if(!isConst)
+							{
+								printTab();
+								if($1 == true)
+									fp << "iconst_1 " << "\n";
+								else if($1 == false)
+									fp << "iconst_0 " << "\n";
+							}
 						};
 %%
 
@@ -924,7 +974,7 @@ void logic_operator(string op)
 	fp << "L" << nowLabel << ":" << "\n";
 	printTab();
 	fp << "iconst_1" << "\n";
-	fp << "L" << nowLabel << ":" << "\n";
+	fp << "L" << nowLabel+1 << ":" << "\n";
 	nowLabel += 2;
 }
 
@@ -947,7 +997,7 @@ int main(int argc, char *argv[])
 		yyerror("parsing error");
 	else
 	{
-		table.dump();
+		//table.dump();
 		cout << "=============Parsing Success=============\n";
 	}
 	fp.close();

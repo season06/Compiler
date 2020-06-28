@@ -166,7 +166,7 @@ public:
 	map<string, IDinfo> idmap;
 	vector<string> id_name;		// map has no order, user vector instead
 	Symbol() {}
-	int insert(string id, const IDinfo &f, bool isGlobal)
+	int insert(string id, const IDinfo &f, bool global)
 	{
 		if(isexist(id))
 			return -1;
@@ -178,7 +178,7 @@ public:
 			idmap[id].scope = f.scope;
 			idmap[id].init = f.init;
 			idmap[id].value = f.value;
-			idmap[id].global = isGlobal;
+			idmap[id].global = global;
 			return 1;
 		}
 	}
@@ -192,7 +192,7 @@ public:
 			i.scope = s_variable;
 		}
 	}
-	int insert_args(string now_func, string id, const IDinfo &f)
+	int insert_args(string now_func, string id, const IDinfo f)
 	{
 		for(int i=0;i<idmap[now_func].args_value.size();i++)
 			if(idmap[now_func].args_value[i].id == id)
@@ -278,11 +278,15 @@ public:
 	{
 		top = -1;
 	}
-	int insert(string id, const IDinfo &c)
+	bool isGlobal()
 	{
 		if(top == 0)
-			return list[top].insert(id, c, true);
-		return list[top].insert(id, c, false);
+			return true;
+		return false;
+	}
+	int insert(string id, const IDinfo &c)
+	{
+		return list[top].insert(id, c, isGlobal());
 	}
 	void push_table()
 	{
