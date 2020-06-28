@@ -12,8 +12,7 @@
 - use yyparse() instead of yylex()
 - use %union pass common variables between lex.l and yacc.y
 - rewrite SymbolTable
-
-- remember there must be **main** function here.
+- !! remember there must be **main** function here.
 
 ## project 3
 - fix SymbolTable: add **isGlobal()**
