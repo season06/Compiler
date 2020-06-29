@@ -23,12 +23,12 @@
 	- for WHILE, add union to store **beginLabel** and **exitLabel**
 - add **javaa** in file
 
-## compile
+## Compile
 ```
-make
+$ make
 ```
 
-## excute
+## Excute
 ```
-make run file=`fileName`
+$ make run file=`fileName`
 ```
