@@ -1,5 +1,18 @@
 object supertest
 {
+	var g = 10
+	def test ()
+	{
+		var i: int = 0
+		while(i < g)
+		{
+			i = i + 1
+			if(i > 5)
+				print(i)
+		}
+		println("end")
+	}
+
 	def loop(n: int): int
 	{
 		var ans = 0
@@ -37,5 +50,7 @@ object supertest
 		println(sum)
 
 		_if(20)
+
+		test()
 	}
 }

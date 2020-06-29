@@ -156,6 +156,7 @@ while     { token(WHILE); }
 <S_STRING>\"    {
                     LIST;
 					yylval.v_string = new string(tempStr);
+					tempStr[0] = '\0';
 					BEGIN(INITIAL);
 					token(T_STRING);
                 }

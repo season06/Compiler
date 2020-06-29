@@ -1,0 +1,43 @@
+class global
+{
+	field static int a = 0
+	method public static bool glo()
+	max_stack 15
+	max_locals 15
+	{
+		sipush 19
+		sipush 50
+		isub
+		ifgt L0
+		iconst_0
+		goto L1
+L0:
+		iconst_1
+L1:
+		ifeq L2
+		getstatic java.io.PrintStream java.lang.System.out
+		ldc "big"
+		invokevirtual void java.io.PrintStream.println(java.lang.String)
+		goto L3
+L2:
+		nop
+		getstatic java.io.PrintStream java.lang.System.out
+		ldc "small"
+		invokevirtual void java.io.PrintStream.println(java.lang.String)
+L3:
+		nop
+		getstatic int global.a
+		ireturn
+	}
+	method public static void main(java.lang.String[])
+	max_stack 15
+	max_locals 15
+	{
+		invokestatic bool global.glo()
+		istore 0
+		getstatic java.io.PrintStream java.lang.System.out
+		iload 0
+		invokevirtual void java.io.PrintStream.println(boolean)
+		return
+	}
+}

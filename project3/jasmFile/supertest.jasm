@@ -1,16 +1,15 @@
 class supertest
 {
-	method public static int loop(int)
+	field static int g = 10
+	method public static void test()
 	max_stack 15
 	max_locals 15
 	{
 		sipush 0
-		istore 1
-		sipush 0
-		istore 2
+		istore 0
 L0:
-		iload 2
 		iload 0
+		getstatic int supertest.g
 		isub
 		iflt L1
 		iconst_0
@@ -19,23 +18,69 @@ L1:
 		iconst_1
 L2:
 		ifeq L3
+		iload 0
+		sipush 1
+		iadd
+		istore 0
+		iload 0
+		sipush 5
+		isub
+		ifgt L4
+		iconst_0
+		goto L5
+L4:
+		iconst_1
+L5:
+		ifeq L6
+		getstatic java.io.PrintStream java.lang.System.out
+		iload 0
+		invokevirtual void java.io.PrintStream.print(int)
+L6:
+		nop
+		goto L0
+L3:
+		nop
+		getstatic java.io.PrintStream java.lang.System.out
+		ldc "end"
+		invokevirtual void java.io.PrintStream.println(java.lang.String)
+		return
+	}
+	method public static int loop(int)
+	max_stack 15
+	max_locals 15
+	{
+		sipush 0
+		istore 1
+		sipush 0
+		istore 2
+L7:
+		iload 2
+		iload 0
+		isub
+		iflt L8
+		iconst_0
+		goto L9
+L8:
+		iconst_1
+L9:
+		ifeq L10
 		iload 2
 		istore 3
 		iload 2
 		sipush 1
 		iadd
 		istore 2
-L4:
+L11:
 		iload 3
 		iload 0
 		isub
-		iflt L5
+		iflt L12
 		iconst_0
-		goto L6
-L5:
+		goto L13
+L12:
 		iconst_1
-L6:
-		ifeq L7
+L13:
+		ifeq L14
 		iload 3
 		sipush 1
 		iadd
@@ -44,11 +89,11 @@ L6:
 		iload 3
 		iadd
 		istore 1
-		goto L4
-L7:
+		goto L11
+L14:
 		nop
-		goto L0
-L3:
+		goto L7
+L10:
 		nop
 		iload 1
 		ireturn
@@ -60,35 +105,35 @@ L3:
 		iload 0
 		sipush 10
 		isub
-		iflt L8
+		iflt L15
 		iconst_0
-		goto L9
-L8:
+		goto L16
+L15:
 		iconst_1
-L9:
-		ifeq L10
+L16:
+		ifeq L17
 		getstatic java.io.PrintStream java.lang.System.out
 		sipush 15
 		invokevirtual void java.io.PrintStream.print(int)
-		goto L11
-L10:
+		goto L18
+L17:
 		nop
 		iload 0
 		sipush 20
 		isub
-		ifgt L12
+		ifgt L19
 		iconst_0
-		goto L13
-L12:
+		goto L20
+L19:
 		iconst_1
-L13:
-		ifeq L14
+L20:
+		ifeq L21
 		getstatic java.io.PrintStream java.lang.System.out
 		sipush 20
 		invokevirtual void java.io.PrintStream.print(int)
-L14:
+L21:
 		nop
-L11:
+L18:
 		nop
 		return
 	}
@@ -104,6 +149,7 @@ L11:
 		invokevirtual void java.io.PrintStream.println(int)
 		sipush 20
 		invokestatic void supertest._if(int)
+		invokestatic void supertest.test()
 		return
 	}
 }

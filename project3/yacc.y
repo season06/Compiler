@@ -562,7 +562,7 @@ varDeclare : VAR ID ':' dataType '[' T_INT ']'	{
 													if(id->global)
 													{
 														printTab();
-														fp << "field static " << IDtype2str(id->type) << " " << id->id << "\n";
+														fp << "field static int " << id->id << "\n";
 													}
 													else
 													{
