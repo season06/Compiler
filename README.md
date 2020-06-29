@@ -22,3 +22,13 @@
 	- for IF ELSE, use vector to store **elseLabel**
 	- for WHILE, add union to store **beginLabel** and **exitLabel**
 - add **javaa** in file
+
+## compile
+```
+make
+```
+
+## excute
+```
+make run file=`fileName`
+```
