@@ -1,7 +1,7 @@
 class global
 {
 	field static int a = 0
-	method public static bool glo()
+	method public static int glo()
 	max_stack 15
 	max_locals 15
 	{
@@ -27,17 +27,25 @@ L2:
 L3:
 		nop
 		getstatic int global.a
+		iconst_1
+		ixor
+		ifeq L4
+		iconst_1 
+		putstatic int global.a
+L4:
+		nop
+		getstatic int global.a
 		ireturn
 	}
 	method public static void main(java.lang.String[])
 	max_stack 15
 	max_locals 15
 	{
-		invokestatic bool global.glo()
+		invokestatic int global.glo()
 		istore 0
 		getstatic java.io.PrintStream java.lang.System.out
 		iload 0
-		invokevirtual void java.io.PrintStream.println(boolean)
+		invokevirtual void java.io.PrintStream.println(int)
 		return
 	}
 }

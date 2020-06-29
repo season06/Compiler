@@ -152,10 +152,8 @@ funcDec : DEF ID 									{
 															fp << "void main(java.lang.String[])" << "\n";
 														else
 														{
-															if(id->return_type == t_int)
+															if(id->return_type == t_int || id->return_type == t_bool)
 																fp << "int ";
-															else if(id->return_type == t_bool)
-																fp << "bool ";
 															else
 																fp << "void ";
 															fp << *$2 << "(";
@@ -163,10 +161,8 @@ funcDec : DEF ID 									{
 															vector<IDinfo> parm = id->args_value;
 															for(int i = 0; i < parm.size(); i++)
 															{
-																if(parm[i].type == t_int)
+																if(parm[i].type == t_int || parm[i].type == t_bool)
 																	fp << "int";
-																else if(parm[i].type == t_bool)
-																	fp << "bool";
 																
 																if(i != parm.size()-1)
 																	fp << ", ";
@@ -269,10 +265,8 @@ function_invoc : ID 					{
 
 											printTab();
 											fp << "invokestatic ";
-											if(id->return_type == t_int)
+											if(id->return_type == t_int || id->return_type == t_bool)
 												fp << "int ";
-											else if(id->return_type == t_bool)
-												fp << "bool ";
 											else
 												fp << "void ";
 											
@@ -280,10 +274,8 @@ function_invoc : ID 					{
 
 											for(int i = 0; i < parm.size(); i++)
 											{
-												if(parm[i].type == t_int)
+												if(parm[i].type == t_int || parm[i].type == t_bool)
 													fp << "int";
-												else if(parm[i].type == t_bool)
-													fp << "bool";
 												
 												if(i != parm.size()-1)
 													fp << ", ";
@@ -365,10 +357,8 @@ stat : ID '=' expr 					{
 		expr						{
 										printTab();
 										fp << "invokevirtual void java.io.PrintStream.print(";
-										if($3->type == t_int)
+										if($3->type == t_int || $3->type == t_bool)
 											fp << "int)" << "\n";
-										else if($3->type == t_bool)
-											fp << "boolean)" << "\n";
 										else if($3->type == t_string)
 											fp << "java.lang.String)" << "\n";
 									}
@@ -380,10 +370,8 @@ stat : ID '=' expr 					{
 		expr						{
 										printTab();
 										fp << "invokevirtual void java.io.PrintStream.println(";
-										if($3->type == t_int)
+										if($3->type == t_int || $3->type == t_bool)
 											fp << "int)" << "\n";
-										else if($3->type == t_bool)
-											fp << "boolean)" << "\n";
 										else if($3->type == t_string)
 											fp << "java.lang.String)" << "\n";
 									}

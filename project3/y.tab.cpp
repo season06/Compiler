@@ -574,15 +574,15 @@ static const yytype_uint8 yytranslate[] =
 static const yytype_uint16 yyrline[] =
 {
        0,   102,   102,   102,   127,   128,   129,   133,   134,   136,
-     149,   136,   207,   210,   213,   215,   228,   231,   234,   242,
-     250,   250,   293,   294,   296,   299,   303,   308,   309,   311,
-     343,   360,   360,   375,   375,   390,   393,   396,   399,   402,
-     406,   406,   422,   422,   436,   439,   444,   439,   460,   460,
-     468,   468,   470,   470,   479,   480,   483,   484,   487,   488,
-     490,   498,   527,   554,   573,   593,   593,   608,   608,   622,
-     626,   642,   658,   674,   690,   706,   722,   726,   740,   744,
-     779,   784,   799,   808,   817,   826,   835,   864,   893,   910,
-     927,   930,   933,   936,   939,   942,   952,   956,   960,   970
+     149,   136,   203,   206,   209,   211,   224,   227,   230,   238,
+     246,   246,   285,   286,   288,   291,   295,   300,   301,   303,
+     335,   352,   352,   365,   365,   378,   381,   384,   387,   390,
+     394,   394,   410,   410,   424,   427,   432,   427,   448,   448,
+     456,   456,   458,   458,   467,   468,   471,   472,   475,   476,
+     478,   486,   515,   542,   561,   581,   581,   596,   596,   610,
+     614,   630,   646,   662,   678,   694,   710,   714,   728,   732,
+     767,   772,   787,   796,   805,   814,   823,   852,   881,   898,
+     915,   918,   921,   924,   927,   930,   940,   944,   948,   958
 };
 #endif
 
@@ -1554,10 +1554,8 @@ yyreduce:
 															fp << "void main(java.lang.String[])" << "\n";
 														else
 														{
-															if(id->return_type == t_int)
+															if(id->return_type == t_int || id->return_type == t_bool)
 																fp << "int ";
-															else if(id->return_type == t_bool)
-																fp << "bool ";
 															else
 																fp << "void ";
 															fp << *(yyvsp[-5].v_string) << "(";
@@ -1565,10 +1563,8 @@ yyreduce:
 															vector<IDinfo> parm = id->args_value;
 															for(int i = 0; i < parm.size(); i++)
 															{
-																if(parm[i].type == t_int)
+																if(parm[i].type == t_int || parm[i].type == t_bool)
 																	fp << "int";
-																else if(parm[i].type == t_bool)
-																	fp << "bool";
 																
 																if(i != parm.size()-1)
 																	fp << ", ";
@@ -1584,11 +1580,11 @@ yyreduce:
 														fp << "{" << "\n";
 														nowTab++;
 													}
-#line 1588 "y.tab.cpp" /* yacc.c:1646  */
+#line 1584 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 11:
-#line 185 "yacc.y" /* yacc.c:1646  */
+#line 181 "yacc.y" /* yacc.c:1646  */
     {
 														//Trace("def ID (args) type {} ---> funcDec");
 														IDinfo *id = table.lookup(*(yyvsp[-9].v_string));
@@ -1610,27 +1606,27 @@ yyreduce:
 														printTab();
 														fp << "}" << "\n";
 													}
-#line 1614 "y.tab.cpp" /* yacc.c:1646  */
+#line 1610 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 12:
-#line 207 "yacc.y" /* yacc.c:1646  */
+#line 203 "yacc.y" /* yacc.c:1646  */
     {
 											//Trace("args, arg ---> args");
 										}
-#line 1622 "y.tab.cpp" /* yacc.c:1646  */
+#line 1618 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 13:
-#line 210 "yacc.y" /* yacc.c:1646  */
+#line 206 "yacc.y" /* yacc.c:1646  */
     {
 											//Trace("arg ---> args");
 										}
-#line 1630 "y.tab.cpp" /* yacc.c:1646  */
+#line 1626 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 15:
-#line 215 "yacc.y" /* yacc.c:1646  */
+#line 211 "yacc.y" /* yacc.c:1646  */
     {
 											//Trace("ID:type ---> arg");
 											IDinfo *f = new IDinfo((yyvsp[0].type), s_variable, false);
@@ -1643,27 +1639,27 @@ yyreduce:
 											id->stackIndex = nowStack;
 											nowStack++;
 										}
-#line 1647 "y.tab.cpp" /* yacc.c:1646  */
+#line 1643 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 16:
-#line 228 "yacc.y" /* yacc.c:1646  */
+#line 224 "yacc.y" /* yacc.c:1646  */
     {
 											table.list[table.top-1].idmap[nowFunc].return_type = (yyvsp[0].type);
 										}
-#line 1655 "y.tab.cpp" /* yacc.c:1646  */
+#line 1651 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 17:
-#line 231 "yacc.y" /* yacc.c:1646  */
+#line 227 "yacc.y" /* yacc.c:1646  */
     {	/* empty */
 			   								table.list[table.top-1].idmap[nowFunc].return_type = t_unknown;
 		   								}
-#line 1663 "y.tab.cpp" /* yacc.c:1646  */
+#line 1659 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 18:
-#line 234 "yacc.y" /* yacc.c:1646  */
+#line 230 "yacc.y" /* yacc.c:1646  */
     {
 											//Trace("return expr ---> returnVal");
 											table.list[table.top-1].idmap[nowFunc].return_value = new IDinfo(*(yyvsp[0].info));
@@ -1672,11 +1668,11 @@ yyreduce:
 											printTab();
 											fp << "ireturn" << "\n";
 										}
-#line 1676 "y.tab.cpp" /* yacc.c:1646  */
+#line 1672 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 19:
-#line 242 "yacc.y" /* yacc.c:1646  */
+#line 238 "yacc.y" /* yacc.c:1646  */
     {
 											//Trace("return ---> returnVal");
 											table.list[table.top-1].idmap[nowFunc].return_value = new IDinfo();
@@ -1684,19 +1680,19 @@ yyreduce:
 											printTab();
 											fp << "return" << "\n";
 										}
-#line 1688 "y.tab.cpp" /* yacc.c:1646  */
+#line 1684 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 20:
-#line 250 "yacc.y" /* yacc.c:1646  */
+#line 246 "yacc.y" /* yacc.c:1646  */
     {
 											funcCall.push_back(vector<IDinfo>());
 										}
-#line 1696 "y.tab.cpp" /* yacc.c:1646  */
+#line 1692 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 21:
-#line 253 "yacc.y" /* yacc.c:1646  */
+#line 249 "yacc.y" /* yacc.c:1646  */
     {
 											//Trace("ID(parameter) ---> function_invoc");
 											IDinfo *id = table.lookup(*(yyvsp[-4].v_string));
@@ -1716,10 +1712,8 @@ yyreduce:
 
 											printTab();
 											fp << "invokestatic ";
-											if(id->return_type == t_int)
+											if(id->return_type == t_int || id->return_type == t_bool)
 												fp << "int ";
-											else if(id->return_type == t_bool)
-												fp << "bool ";
 											else
 												fp << "void ";
 											
@@ -1727,45 +1721,43 @@ yyreduce:
 
 											for(int i = 0; i < parm.size(); i++)
 											{
-												if(parm[i].type == t_int)
+												if(parm[i].type == t_int || parm[i].type == t_bool)
 													fp << "int";
-												else if(parm[i].type == t_bool)
-													fp << "bool";
 												
 												if(i != parm.size()-1)
 													fp << ", ";
 											}
 											fp << ")" << "\n";
 										}
-#line 1741 "y.tab.cpp" /* yacc.c:1646  */
+#line 1733 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 24:
-#line 296 "yacc.y" /* yacc.c:1646  */
+#line 288 "yacc.y" /* yacc.c:1646  */
     {
 											//Trace("expr, parameter ---> function parameter");
 										}
-#line 1749 "y.tab.cpp" /* yacc.c:1646  */
+#line 1741 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 25:
-#line 299 "yacc.y" /* yacc.c:1646  */
+#line 291 "yacc.y" /* yacc.c:1646  */
     {
 											//Trace("expr ---> function parameter");
 		  								}
-#line 1757 "y.tab.cpp" /* yacc.c:1646  */
+#line 1749 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 26:
-#line 303 "yacc.y" /* yacc.c:1646  */
+#line 295 "yacc.y" /* yacc.c:1646  */
     {
 											funcCall[funcCall.size()-1].push_back(*(yyvsp[0].info));
 										}
-#line 1765 "y.tab.cpp" /* yacc.c:1646  */
+#line 1757 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 29:
-#line 311 "yacc.y" /* yacc.c:1646  */
+#line 303 "yacc.y" /* yacc.c:1646  */
     {
 										//Trace("ID[expr] ---> stat");
 										IDinfo *id = table.lookup(*(yyvsp[-2].v_string));
@@ -1798,11 +1790,11 @@ yyreduce:
 											fp << "istore "<< id->stackIndex << "\n";
 										}
 									}
-#line 1802 "y.tab.cpp" /* yacc.c:1646  */
+#line 1794 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 30:
-#line 343 "yacc.y" /* yacc.c:1646  */
+#line 335 "yacc.y" /* yacc.c:1646  */
     {
 										//Trace("ID[expr]=expr ---> stat");
 										IDinfo *id = table.lookup(*(yyvsp[-5].v_string));
@@ -1820,112 +1812,108 @@ yyreduce:
 										id->arr_value[index].setValue((yyvsp[0].info)->value);
 										id->init = true;
 									}
-#line 1824 "y.tab.cpp" /* yacc.c:1646  */
+#line 1816 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 31:
-#line 360 "yacc.y" /* yacc.c:1646  */
+#line 352 "yacc.y" /* yacc.c:1646  */
     {	
 										//Trace("print ---> stat");
 										printTab();
 										fp << "getstatic java.io.PrintStream java.lang.System.out" << "\n";
 									}
-#line 1834 "y.tab.cpp" /* yacc.c:1646  */
+#line 1826 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 32:
-#line 365 "yacc.y" /* yacc.c:1646  */
+#line 357 "yacc.y" /* yacc.c:1646  */
     {
 										printTab();
 										fp << "invokevirtual void java.io.PrintStream.print(";
-										if((yyvsp[0].info)->type == t_int)
+										if((yyvsp[0].info)->type == t_int || (yyvsp[0].info)->type == t_bool)
 											fp << "int)" << "\n";
-										else if((yyvsp[0].info)->type == t_bool)
-											fp << "boolean)" << "\n";
 										else if((yyvsp[0].info)->type == t_string)
 											fp << "java.lang.String)" << "\n";
 									}
-#line 1849 "y.tab.cpp" /* yacc.c:1646  */
+#line 1839 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 33:
-#line 375 "yacc.y" /* yacc.c:1646  */
+#line 365 "yacc.y" /* yacc.c:1646  */
     {	
 										//Trace("println ---> stat");
 										printTab();
 										fp << "getstatic java.io.PrintStream java.lang.System.out" << "\n";
 									}
-#line 1859 "y.tab.cpp" /* yacc.c:1646  */
+#line 1849 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 34:
-#line 380 "yacc.y" /* yacc.c:1646  */
+#line 370 "yacc.y" /* yacc.c:1646  */
     {
 										printTab();
 										fp << "invokevirtual void java.io.PrintStream.println(";
-										if((yyvsp[0].info)->type == t_int)
+										if((yyvsp[0].info)->type == t_int || (yyvsp[0].info)->type == t_bool)
 											fp << "int)" << "\n";
-										else if((yyvsp[0].info)->type == t_bool)
-											fp << "boolean)" << "\n";
 										else if((yyvsp[0].info)->type == t_string)
 											fp << "java.lang.String)" << "\n";
 									}
-#line 1874 "y.tab.cpp" /* yacc.c:1646  */
+#line 1862 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 35:
-#line 390 "yacc.y" /* yacc.c:1646  */
+#line 378 "yacc.y" /* yacc.c:1646  */
     {
 										//Trace("read ID ---> stat");
 									}
-#line 1882 "y.tab.cpp" /* yacc.c:1646  */
+#line 1870 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 36:
-#line 393 "yacc.y" /* yacc.c:1646  */
+#line 381 "yacc.y" /* yacc.c:1646  */
     {
 										//Trace("returnVal ---> stat");
 									}
-#line 1890 "y.tab.cpp" /* yacc.c:1646  */
+#line 1878 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 37:
-#line 396 "yacc.y" /* yacc.c:1646  */
+#line 384 "yacc.y" /* yacc.c:1646  */
     {	
 										//Trace("ifStat ---> stat");
 									}
-#line 1898 "y.tab.cpp" /* yacc.c:1646  */
+#line 1886 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 38:
-#line 399 "yacc.y" /* yacc.c:1646  */
+#line 387 "yacc.y" /* yacc.c:1646  */
     {
 										//Trace("loopStat ---> stat");
 									}
-#line 1906 "y.tab.cpp" /* yacc.c:1646  */
+#line 1894 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 39:
-#line 402 "yacc.y" /* yacc.c:1646  */
+#line 390 "yacc.y" /* yacc.c:1646  */
     {
 										//Trace("function_invoc ---> stat");
 									}
-#line 1914 "y.tab.cpp" /* yacc.c:1646  */
+#line 1902 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 40:
-#line 406 "yacc.y" /* yacc.c:1646  */
+#line 394 "yacc.y" /* yacc.c:1646  */
     {
 										printTab();
 										fp << "ifeq " << "L" << nowLabel << "\n";
 										elseLabel.push_back(nowLabel);
 										nowLabel++;
 									}
-#line 1925 "y.tab.cpp" /* yacc.c:1646  */
+#line 1913 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 41:
-#line 412 "yacc.y" /* yacc.c:1646  */
+#line 400 "yacc.y" /* yacc.c:1646  */
     {
 			 							//Trace("IF (bool_expr) block elseStat ---> ifStat");
 										
@@ -1935,11 +1923,11 @@ yyreduce:
 										printTab();
 										fp << "nop" << "\n";
 									}
-#line 1939 "y.tab.cpp" /* yacc.c:1646  */
+#line 1927 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 42:
-#line 422 "yacc.y" /* yacc.c:1646  */
+#line 410 "yacc.y" /* yacc.c:1646  */
     {
 										printTab();
 										fp << "goto " << "L" << nowLabel << "\n";
@@ -1951,40 +1939,40 @@ yyreduce:
 										printTab();
 										fp << "nop" << "\n";
 									}
-#line 1955 "y.tab.cpp" /* yacc.c:1646  */
+#line 1943 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 43:
-#line 433 "yacc.y" /* yacc.c:1646  */
+#line 421 "yacc.y" /* yacc.c:1646  */
     {
 			   							//Trace("else block ---> elseStat");
 									}
-#line 1963 "y.tab.cpp" /* yacc.c:1646  */
+#line 1951 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 45:
-#line 439 "yacc.y" /* yacc.c:1646  */
+#line 427 "yacc.y" /* yacc.c:1646  */
     {
 													fp << "L" << nowLabel << ":" << "\n";
 													(yyvsp[0].whileLoop).beginLabel = nowLabel;
 													nowLabel++;
 												}
-#line 1973 "y.tab.cpp" /* yacc.c:1646  */
+#line 1961 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 46:
-#line 444 "yacc.y" /* yacc.c:1646  */
+#line 432 "yacc.y" /* yacc.c:1646  */
     {
 													printTab();
 													fp << "ifeq " << "L" << nowLabel << "\n";
 													(yyvsp[-4].whileLoop).exitLable = nowLabel;
 													nowLabel++;
 												}
-#line 1984 "y.tab.cpp" /* yacc.c:1646  */
+#line 1972 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 47:
-#line 450 "yacc.y" /* yacc.c:1646  */
+#line 438 "yacc.y" /* yacc.c:1646  */
     {
 													//Trace("WHILE (expr) ---> loopStat");
 
@@ -1995,48 +1983,48 @@ yyreduce:
 													printTab();
 													fp << "nop" << "\n";
 												}
-#line 1999 "y.tab.cpp" /* yacc.c:1646  */
+#line 1987 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 48:
-#line 460 "yacc.y" /* yacc.c:1646  */
+#line 448 "yacc.y" /* yacc.c:1646  */
     {
 													IDinfo *id = table.lookup(*(yyvsp[-6].v_string));
 													if(id == NULL)
 														yyerror(*(yyvsp[-6].v_string) + " not found");
 												}
-#line 2009 "y.tab.cpp" /* yacc.c:1646  */
+#line 1997 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 49:
-#line 465 "yacc.y" /* yacc.c:1646  */
+#line 453 "yacc.y" /* yacc.c:1646  */
     {	
 			   										//Trace("for (id <- expr to expr) ---> loopStat");
 		   										}
-#line 2017 "y.tab.cpp" /* yacc.c:1646  */
+#line 2005 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 52:
-#line 470 "yacc.y" /* yacc.c:1646  */
+#line 458 "yacc.y" /* yacc.c:1646  */
     {
 										//Trace("create block table");
 										table.push_table();
 									}
-#line 2026 "y.tab.cpp" /* yacc.c:1646  */
+#line 2014 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 53:
-#line 474 "yacc.y" /* yacc.c:1646  */
+#line 462 "yacc.y" /* yacc.c:1646  */
     {
 										//Trace("{blockContent} ---> block");
 										table.dump();
 										table.pop_table();
 									}
-#line 2036 "y.tab.cpp" /* yacc.c:1646  */
+#line 2024 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 60:
-#line 490 "yacc.y" /* yacc.c:1646  */
+#line 478 "yacc.y" /* yacc.c:1646  */
     {
 													//Trace("var id : type [ expr ] ---> declaration");
 													IDinfo *f = new IDinfo((yyvsp[-3].type), s_array, false);
@@ -2045,11 +2033,11 @@ yyreduce:
 														yyerror(*(yyvsp[-5].v_string) + " has been declared");
 													table.list[table.top].insert_arr(*(yyvsp[-5].v_string), (yyvsp[-3].type), (yyvsp[-1].v_int));
 												}
-#line 2049 "y.tab.cpp" /* yacc.c:1646  */
+#line 2037 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 61:
-#line 498 "yacc.y" /* yacc.c:1646  */
+#line 486 "yacc.y" /* yacc.c:1646  */
     {
 													//Trace("var id : type = expr ---> declaration");
 													if((yyvsp[-2].type) != (yyvsp[0].info)->type)
@@ -2079,11 +2067,11 @@ yyreduce:
 															fp << "istore " << id->stackIndex << "\n";
 													}
 												}
-#line 2083 "y.tab.cpp" /* yacc.c:1646  */
+#line 2071 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 62:
-#line 527 "yacc.y" /* yacc.c:1646  */
+#line 515 "yacc.y" /* yacc.c:1646  */
     {
 													//Trace("var id = expr ---> declaration");
 													(yyvsp[0].info)->scope = s_variable;
@@ -2111,11 +2099,11 @@ yyreduce:
 															fp << "istore " << id->stackIndex << "\n";
 													}
 												}
-#line 2115 "y.tab.cpp" /* yacc.c:1646  */
+#line 2103 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 63:
-#line 554 "yacc.y" /* yacc.c:1646  */
+#line 542 "yacc.y" /* yacc.c:1646  */
     {
 													//Trace("var id : type ---> declaration");
 													IDinfo *f = new IDinfo((yyvsp[0].type), s_variable, false);
@@ -2135,11 +2123,11 @@ yyreduce:
 														nowStack++;
 													}
 												}
-#line 2139 "y.tab.cpp" /* yacc.c:1646  */
+#line 2127 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 64:
-#line 573 "yacc.y" /* yacc.c:1646  */
+#line 561 "yacc.y" /* yacc.c:1646  */
     {
 													//Trace("var id ---> declaration");
 													IDinfo *f = new IDinfo(t_unknown, s_variable, false);
@@ -2159,19 +2147,19 @@ yyreduce:
 														nowStack++;
 													}
 												}
-#line 2163 "y.tab.cpp" /* yacc.c:1646  */
+#line 2151 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 65:
-#line 593 "yacc.y" /* yacc.c:1646  */
+#line 581 "yacc.y" /* yacc.c:1646  */
     { 
 													isConst = true;
 												}
-#line 2171 "y.tab.cpp" /* yacc.c:1646  */
+#line 2159 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 66:
-#line 596 "yacc.y" /* yacc.c:1646  */
+#line 584 "yacc.y" /* yacc.c:1646  */
     {
 													//Trace("val id : type = expr ---> declaration");
 													if((yyvsp[-3].type) != (yyvsp[0].info)->type)
@@ -2184,19 +2172,19 @@ yyreduce:
 
 													isConst = false;
 												}
-#line 2188 "y.tab.cpp" /* yacc.c:1646  */
+#line 2176 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 67:
-#line 608 "yacc.y" /* yacc.c:1646  */
+#line 596 "yacc.y" /* yacc.c:1646  */
     {
 				  									isConst = true;
 												}
-#line 2196 "y.tab.cpp" /* yacc.c:1646  */
+#line 2184 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 68:
-#line 611 "yacc.y" /* yacc.c:1646  */
+#line 599 "yacc.y" /* yacc.c:1646  */
     {
 													//Trace("val id = expr ---> declaration");
 													(yyvsp[0].info)->scope = s_const;
@@ -2207,20 +2195,20 @@ yyreduce:
 
 													isConst = false;
 												}
-#line 2211 "y.tab.cpp" /* yacc.c:1646  */
+#line 2199 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 69:
-#line 622 "yacc.y" /* yacc.c:1646  */
+#line 610 "yacc.y" /* yacc.c:1646  */
     {
 								//Trace("(expr) ---> expr");
 								(yyval.info) = (yyvsp[-1].info);
 							}
-#line 2220 "y.tab.cpp" /* yacc.c:1646  */
+#line 2208 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 70:
-#line 626 "yacc.y" /* yacc.c:1646  */
+#line 614 "yacc.y" /* yacc.c:1646  */
     { 
 								//Trace("-expr ---> expr");
 								if((yyvsp[0].info)->type == t_int)
@@ -2237,11 +2225,11 @@ yyreduce:
 									fp << "ineg\n";
 								}
 							}
-#line 2241 "y.tab.cpp" /* yacc.c:1646  */
+#line 2229 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 71:
-#line 642 "yacc.y" /* yacc.c:1646  */
+#line 630 "yacc.y" /* yacc.c:1646  */
     { 
 								//Trace("expr + expr ---> expr");
 								if((yyvsp[-2].info)->type == t_int && (yyvsp[0].info)->type == t_int)
@@ -2258,11 +2246,11 @@ yyreduce:
 									fp << "iadd\n";
 								}
 							}
-#line 2262 "y.tab.cpp" /* yacc.c:1646  */
+#line 2250 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 72:
-#line 658 "yacc.y" /* yacc.c:1646  */
+#line 646 "yacc.y" /* yacc.c:1646  */
     { 
 								//Trace("expr - expr ---> expr");
 								if((yyvsp[-2].info)->type == t_int && (yyvsp[0].info)->type == t_int)
@@ -2279,11 +2267,11 @@ yyreduce:
 									fp << "isub\n";
 								}
 							}
-#line 2283 "y.tab.cpp" /* yacc.c:1646  */
+#line 2271 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 73:
-#line 674 "yacc.y" /* yacc.c:1646  */
+#line 662 "yacc.y" /* yacc.c:1646  */
     { 
 								//Trace("expr * expr ---> expr");
 								if((yyvsp[-2].info)->type == t_int && (yyvsp[0].info)->type == t_int)
@@ -2300,11 +2288,11 @@ yyreduce:
 									fp << "imul\n";
 								}
 							}
-#line 2304 "y.tab.cpp" /* yacc.c:1646  */
+#line 2292 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 74:
-#line 690 "yacc.y" /* yacc.c:1646  */
+#line 678 "yacc.y" /* yacc.c:1646  */
     { 
 								//Trace("expr / expr ---> expr");
 								if((yyvsp[-2].info)->type == t_int && (yyvsp[0].info)->type == t_int)
@@ -2321,11 +2309,11 @@ yyreduce:
 									fp << "idiv\n";
 								}
 							}
-#line 2325 "y.tab.cpp" /* yacc.c:1646  */
+#line 2313 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 75:
-#line 706 "yacc.y" /* yacc.c:1646  */
+#line 694 "yacc.y" /* yacc.c:1646  */
     { 
 								//Trace("expr % expr ---> expr");
 								if((yyvsp[-2].info)->type == t_int && (yyvsp[0].info)->type == t_int)
@@ -2342,20 +2330,20 @@ yyreduce:
 									fp << "irem\n";
 								}
 							}
-#line 2346 "y.tab.cpp" /* yacc.c:1646  */
+#line 2334 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 76:
-#line 722 "yacc.y" /* yacc.c:1646  */
+#line 710 "yacc.y" /* yacc.c:1646  */
     {
 								//Trace("bool_expr ---> expr");
 								(yyval.info) = (yyvsp[0].info);
 							}
-#line 2355 "y.tab.cpp" /* yacc.c:1646  */
+#line 2343 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 77:
-#line 726 "yacc.y" /* yacc.c:1646  */
+#line 714 "yacc.y" /* yacc.c:1646  */
     {
 								//Trace("ID[expr] ---> expr");
 								IDinfo *id = table.lookup(*(yyvsp[-3].v_string));
@@ -2370,20 +2358,20 @@ yyreduce:
 									yyerror("Arrey index out of range");
 								(yyval.info) = new IDinfo(id->arr_value[index]);
 							}
-#line 2374 "y.tab.cpp" /* yacc.c:1646  */
+#line 2362 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 78:
-#line 740 "yacc.y" /* yacc.c:1646  */
+#line 728 "yacc.y" /* yacc.c:1646  */
     {
 		 						//Trace("function_invoc ---> expr");
 								(yyval.info) = (yyvsp[0].info);
 							}
-#line 2383 "y.tab.cpp" /* yacc.c:1646  */
+#line 2371 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 79:
-#line 744 "yacc.y" /* yacc.c:1646  */
+#line 732 "yacc.y" /* yacc.c:1646  */
     {
 								//Trace("ID ---> expr");
 								IDinfo *id = table.lookup(*(yyvsp[0].v_string));
@@ -2419,20 +2407,20 @@ yyreduce:
 									}
 								}
 							}
-#line 2423 "y.tab.cpp" /* yacc.c:1646  */
+#line 2411 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 80:
-#line 779 "yacc.y" /* yacc.c:1646  */
+#line 767 "yacc.y" /* yacc.c:1646  */
     {
 								//Trace("values ---> expr");
 								(yyval.info) = (yyvsp[0].info);
 							}
-#line 2432 "y.tab.cpp" /* yacc.c:1646  */
+#line 2420 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 81:
-#line 784 "yacc.y" /* yacc.c:1646  */
+#line 772 "yacc.y" /* yacc.c:1646  */
     { 
 								//Trace("! expr ---> bool_expr");
 								if((yyvsp[0].info)->type != t_bool)
@@ -2448,11 +2436,11 @@ yyreduce:
 									fp << "ixor" << "\n";
 								}
 							}
-#line 2452 "y.tab.cpp" /* yacc.c:1646  */
+#line 2440 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 82:
-#line 799 "yacc.y" /* yacc.c:1646  */
+#line 787 "yacc.y" /* yacc.c:1646  */
     { 
 								//Trace("expr < expr ---> bool_expr");
 								if((yyvsp[-2].info)->type == t_int && (yyvsp[0].info)->type == t_int)
@@ -2462,11 +2450,11 @@ yyreduce:
 								
 								logic_operator("iflt");
 							}
-#line 2466 "y.tab.cpp" /* yacc.c:1646  */
+#line 2454 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 83:
-#line 808 "yacc.y" /* yacc.c:1646  */
+#line 796 "yacc.y" /* yacc.c:1646  */
     { 
 								//Trace("expr <= expr ---> bool_expr");
 								if((yyvsp[-2].info)->type == t_int && (yyvsp[0].info)->type == t_int)
@@ -2476,11 +2464,11 @@ yyreduce:
 								
 								logic_operator("ifle");
 							}
-#line 2480 "y.tab.cpp" /* yacc.c:1646  */
+#line 2468 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 84:
-#line 817 "yacc.y" /* yacc.c:1646  */
+#line 805 "yacc.y" /* yacc.c:1646  */
     { 
 								//Trace("expr > expr ---> bool_expr");
 								if((yyvsp[-2].info)->type == t_int && (yyvsp[0].info)->type == t_int)
@@ -2490,11 +2478,11 @@ yyreduce:
 								
 								logic_operator("ifgt");
 							}
-#line 2494 "y.tab.cpp" /* yacc.c:1646  */
+#line 2482 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 85:
-#line 826 "yacc.y" /* yacc.c:1646  */
+#line 814 "yacc.y" /* yacc.c:1646  */
     { 
 								//Trace("expr >= expr ---> bool_expr");
 								if((yyvsp[-2].info)->type == t_int && (yyvsp[0].info)->type == t_int)
@@ -2504,11 +2492,11 @@ yyreduce:
 								
 								logic_operator("ifge");
 							}
-#line 2508 "y.tab.cpp" /* yacc.c:1646  */
+#line 2496 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 86:
-#line 835 "yacc.y" /* yacc.c:1646  */
+#line 823 "yacc.y" /* yacc.c:1646  */
     { 
 								//Trace("expr == expr ---> bool_expr");
 								if((yyvsp[-2].info)->type == t_int && (yyvsp[0].info)->type == t_int)
@@ -2538,11 +2526,11 @@ yyreduce:
 
 								logic_operator("ifeq");
 							}
-#line 2542 "y.tab.cpp" /* yacc.c:1646  */
+#line 2530 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 87:
-#line 864 "yacc.y" /* yacc.c:1646  */
+#line 852 "yacc.y" /* yacc.c:1646  */
     { 
 								//Trace("expr != expr ---> bool_expr");
 								if((yyvsp[-2].info)->type == t_int && (yyvsp[0].info)->type == t_int)
@@ -2572,11 +2560,11 @@ yyreduce:
 
 								logic_operator("ifne");
 							}
-#line 2576 "y.tab.cpp" /* yacc.c:1646  */
+#line 2564 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 88:
-#line 893 "yacc.y" /* yacc.c:1646  */
+#line 881 "yacc.y" /* yacc.c:1646  */
     { 
 								//Trace("expr && expr ---> bool_expr");
 								if((yyvsp[-2].info)->type != t_bool || (yyvsp[0].info)->type != t_bool)
@@ -2594,11 +2582,11 @@ yyreduce:
 									fp << "iand\n";
 								}
 							}
-#line 2598 "y.tab.cpp" /* yacc.c:1646  */
+#line 2586 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 89:
-#line 910 "yacc.y" /* yacc.c:1646  */
+#line 898 "yacc.y" /* yacc.c:1646  */
     { 
 								//Trace("expr || expr ---> bool_expr");
 								if((yyvsp[-2].info)->type != t_bool || (yyvsp[0].info)->type != t_bool)
@@ -2616,51 +2604,51 @@ yyreduce:
 									fp << "ior\n";
 								}
 							}
-#line 2620 "y.tab.cpp" /* yacc.c:1646  */
+#line 2608 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 90:
-#line 927 "yacc.y" /* yacc.c:1646  */
+#line 915 "yacc.y" /* yacc.c:1646  */
     {
 							(yyval.type) = t_int;
 						}
-#line 2628 "y.tab.cpp" /* yacc.c:1646  */
+#line 2616 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 91:
-#line 930 "yacc.y" /* yacc.c:1646  */
+#line 918 "yacc.y" /* yacc.c:1646  */
     {
 							(yyval.type) = t_float;
 						}
-#line 2636 "y.tab.cpp" /* yacc.c:1646  */
+#line 2624 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 92:
-#line 933 "yacc.y" /* yacc.c:1646  */
+#line 921 "yacc.y" /* yacc.c:1646  */
     {
 							(yyval.type) = t_char;
 						}
-#line 2644 "y.tab.cpp" /* yacc.c:1646  */
+#line 2632 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 93:
-#line 936 "yacc.y" /* yacc.c:1646  */
+#line 924 "yacc.y" /* yacc.c:1646  */
     {
 							(yyval.type) = t_string;
 						}
-#line 2652 "y.tab.cpp" /* yacc.c:1646  */
+#line 2640 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 94:
-#line 939 "yacc.y" /* yacc.c:1646  */
+#line 927 "yacc.y" /* yacc.c:1646  */
     {
 							(yyval.type) = t_bool;
 						}
-#line 2660 "y.tab.cpp" /* yacc.c:1646  */
+#line 2648 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 95:
-#line 942 "yacc.y" /* yacc.c:1646  */
+#line 930 "yacc.y" /* yacc.c:1646  */
     {
 							//Trace("T_INT ---> values");
 							(yyval.info) = set_int((yyvsp[0].v_int));
@@ -2671,29 +2659,29 @@ yyreduce:
 								fp << "sipush " << (yyvsp[0].v_int) << "\n";
 							}
 						}
-#line 2675 "y.tab.cpp" /* yacc.c:1646  */
+#line 2663 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 96:
-#line 952 "yacc.y" /* yacc.c:1646  */
+#line 940 "yacc.y" /* yacc.c:1646  */
     {
 							//Trace("T_FLOAT ---> values");
 							(yyval.info) = set_float((yyvsp[0].v_float));
 						}
-#line 2684 "y.tab.cpp" /* yacc.c:1646  */
+#line 2672 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 97:
-#line 956 "yacc.y" /* yacc.c:1646  */
+#line 944 "yacc.y" /* yacc.c:1646  */
     {
 							//Trace("T_CHAR ---> values");
 							(yyval.info) = set_char((yyvsp[0].v_char));
 						}
-#line 2693 "y.tab.cpp" /* yacc.c:1646  */
+#line 2681 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 98:
-#line 960 "yacc.y" /* yacc.c:1646  */
+#line 948 "yacc.y" /* yacc.c:1646  */
     {
 							//Trace("T_STRING ---> values");
 							(yyval.info) = set_string(*(yyvsp[0].v_string));
@@ -2704,11 +2692,11 @@ yyreduce:
 								fp << "ldc \"" << *(yyvsp[0].v_string) << "\"" << "\n";
 							}
 						}
-#line 2708 "y.tab.cpp" /* yacc.c:1646  */
+#line 2696 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
   case 99:
-#line 970 "yacc.y" /* yacc.c:1646  */
+#line 958 "yacc.y" /* yacc.c:1646  */
     {
 							//Trace("T_BOOL ---> values");
 							(yyval.info) = set_bool((yyvsp[0].v_bool));
@@ -2722,11 +2710,11 @@ yyreduce:
 									fp << "iconst_0 " << "\n";
 							}
 						}
-#line 2726 "y.tab.cpp" /* yacc.c:1646  */
+#line 2714 "y.tab.cpp" /* yacc.c:1646  */
     break;
 
 
-#line 2730 "y.tab.cpp" /* yacc.c:1646  */
+#line 2718 "y.tab.cpp" /* yacc.c:1646  */
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -2954,7 +2942,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 983 "yacc.y" /* yacc.c:1906  */
+#line 971 "yacc.y" /* yacc.c:1906  */
 
 
 void printTab()

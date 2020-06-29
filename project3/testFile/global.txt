@@ -9,11 +9,15 @@ object global
 			println("big")
 		else
 			println("small")
+
+		if(!a)
+			a=true
+		
 		return a
 	}
 	def main ()
 	{
-		var bool
+		var bool: boolean
 		bool = glo()
 		println(bool)
 	}

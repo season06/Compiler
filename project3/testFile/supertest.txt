@@ -1,6 +1,7 @@
 object supertest
 {
 	var g = 10
+
 	def test ()
 	{
 		var i: int = 0
