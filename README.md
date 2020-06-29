@@ -14,7 +14,7 @@
 - rewrite SymbolTable
 - !! remember there must be **main** function here.
 
-## project 3
+## project3 - Java ByteCode
 - fix SymbolTable: add **isGlobal()**
 - In parser
 	- use **fstream** to write the **.jasm**
